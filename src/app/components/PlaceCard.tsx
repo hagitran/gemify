@@ -10,30 +10,36 @@ export default function PlaceCard({ data, distance }: { data: any; distance?: nu
   }
   console.log(distance)
   return (
-    <div className="rounded-xl p-4 bg-white min-w-44 max-w-xs flex flex-col items-start gap-2">
-      {imageUrl && (
-        <div className="w-full flex justify-center">
+    <div className="max-w-[220px] w-full">
+      <div className="relative w-full">
+        {imageUrl && (
           <img
             src={imageUrl}
             alt={data.name || data.displayName}
-            className="aspect-square w-40 h-40 object-cover rounded-lg mb-2 border border-emerald-50"
-            style={{ minWidth: 0, minHeight: 0 }}
+            className="w-full aspect-square object-cover rounded-2xl"
           />
-        </div>
-      )}
-      <div className="font-semibold text-sm text-emerald-700 mb-0.5 w-full truncate">
-        {data.name || data.displayName}
-      </div>
-      <div className="text-xs text-zinc-500 mb-1 w-full truncate">
-        {data.displayName}
-      </div>
-      <div className='flex flex-row gap-2 w-full items-center'>
-        <span className="inline-block px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 text-xs font-medium">
+        )}
+        {/* Type badge overlay */}
+        <span className="absolute top-2 left-2 bg-white/90 text-gray-900 text-xs font-semibold rounded-full px-3 py-1 shadow-sm">
           {data.type}
         </span>
-        <span className="inline-block px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 text-xs font-medium">
-          {typeof distance === 'number' && distance.toFixed(2)} km
+        {/* Heart icon overlay */}
+        <span className="absolute top-2 right-2 bg-white/90 rounded-full p-1 shadow-sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 w-4 h-4"><path d="M19.5 13.572l-7.5 7.178-7.5-7.178C2.5 11.5 4.5 7.5 8.5 7.5c2 0 3.5 1.5 3.5 1.5s1.5-1.5 3.5-1.5c4 0 6 4 3.5 6.072z"></path></svg>
         </span>
+      </div>
+      <div className="pt-2 pb-3 flex flex-col gap-1">
+        <div className="font-medium text-gray-900 text-sm truncate">
+          {data.name || data.displayName}
+        </div>
+        <div className="text-xs text-gray-500 truncate">
+          {data.displayName}
+        </div>
+        <div className="flex items-center gap-1 text-xs text-gray-500">
+          {typeof distance === 'number' && (
+            <span>{distance.toFixed(1)} km</span>
+          )}
+        </div>
       </div>
     </div>
   );

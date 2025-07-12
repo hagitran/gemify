@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Image from "next/image";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,11 +24,30 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className="flex flex-col min-h-screen font-geist bg-white text-zinc-700">
+        {/* <Topbar /> */}
+        <main className="flex-grow w-full flex items-center justify-center">
+          {children}
+        </main>
+        {/* <Analytics /> */}
+        <footer className="flex gap-[12px] flex-wrap items-center justify-center mt-0 mb-8">
+          <a
+            className="flex items-center gap-2 hover:underline hover:underline-offset-4"
+            href="https://hagitran.com"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Image
+              aria-hidden
+              src="/globe.svg"
+              alt="Globe icon"
+              width={16}
+              height={16}
+            />
+            By Hagi
+          </a>
+        </footer>
       </body>
     </html>
   );

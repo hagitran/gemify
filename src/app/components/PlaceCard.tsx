@@ -1,29 +1,22 @@
 import supabase from '../../supabaseClient';
 
-export default function PlaceCard({ data, distance, empty }: { data: any; distance?: number; empty?: boolean }) {
-  let imageUrl: string | null = null;
-  if (data.image_path) {
-    const { data: urlData } = supabase.storage
-      ? supabase.storage.from('images').getPublicUrl(data.image_path)
-      : { data: { publicUrl: data.image_path } };
-    imageUrl = urlData?.publicUrl || null;
-  }
+export default function PlaceCard({ data, distance }: { data: any; distance?: number }) {
 
   return (
     <div className="max-w-[220px] w-full">
-      <div className="relative w-full">
-        {empty && !imageUrl ? (
-          <div className='aspect-square object-cover bg-zinc-200 min-w-48 min-h-48 rounded-2xl' />
-        ) : (
+      <div className="relative w-48">
+        {data.imagePath ? (
           <img
-            src={imageUrl || undefined}
-            alt={data.name || data.displayName}
-            className="w-full aspect-square object-cover rounded-2xl"
+            src={data.imagePath}
+            alt={data.name || data.displayName || 'Preview'}
+            className="aspect-square object-cover rounded-2xl w-48 h-48 bg-zinc-200"
           />
+        ) : (
+          <div className='aspect-square object-cover bg-zinc-200 min-w-48 min-h-48 rounded-2xl' />
         )}
         {/* Type badge overlay */}
-        <span className={`absolute top-2 left-2 bg-white/90 text-gray-900 text-xs font-semibold rounded-full px-3 py-1 shadow-sm ${empty ? "!text-zinc-400" : ""}`}>
-          {empty ? "What type?" : data.type}
+        <span className="absolute top-2 left-2 bg-white/90 text-gray-900 text-xs font-semibold rounded-full px-3 py-1 shadow-sm">
+          {data.type || "What type?"}
         </span>
         {/* Heart icon overlay */}
         <span className="absolute top-2 right-2 bg-white/90 rounded-full p-1 shadow-sm">
@@ -32,23 +25,17 @@ export default function PlaceCard({ data, distance, empty }: { data: any; distan
       </div>
       <div className="pt-2 pb-3 flex flex-col gap-0.5">
         <div className="font-medium text-gray-900 text-sm truncate">
-          {empty ? "Place name" : data.name || data.displayName}
+          {data.name || data.displayName || "Place name"}
         </div>
-        {/* <div className="text-xs text-gray-500 truncate">
-          {empty ? "Display name" : data.displayName}
-        </div> */}
         <div className='flex flex-row gap-4'>
+          <div className="flex items-center gap-1 text-xs text-gray-500">
+            {Number.isInteger(data.price) && data.price > 0 ? '$'.repeat(data.price) : 'Price'}
+          </div>
           <div className="flex items-center gap-1 text-xs text-gray-500">
             {typeof distance === 'number' && (
               <span>{distance.toFixed(1)} km</span>
             )}
           </div>
-          <div className="flex items-center gap-1 text-xs text-gray-500">
-            {empty ? 'Price' : (Number.isInteger(data.price) && data.price > 0 ? '$'.repeat(data.price) : null)}
-          </div>
-          {/* <div className="flex items-center gap-1 text-xs text-gray-500">
-            {empty ? 'Karma' : (typeof data.karma === 'number' ? data.karma : null) + " likes"}
-          </div> */}
         </div>
       </div>
     </div>

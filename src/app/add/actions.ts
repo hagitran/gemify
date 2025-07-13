@@ -2,35 +2,38 @@
 
 import supabase from "@/supabaseClient";
 
-export async function addPlace(city: string, name: string) {
-  const response = await fetch(
-    `https://nominatim.openstreetmap.org/search?q=${name}&format=json`
-  );
-  const osmData = await response.json();
-
-  // Check if we got a valid place
-  if (!osmData || !osmData[0] || !osmData[0].osm_id) {
-    return { error: "No valid place found" };
-  }
-
-  const placeData = osmData[0];
-
+export async function addPlace(place: {
+  name: string;
+  city: string;
+  type: string;
+  address: string;
+  description: string;
+  imagePath: string;
+  price: number;
+  notes: string;
+  lat?: number;
+  long?: number;
+  displayName?: string;
+  osmId?: string;
+}) {
+  // Compose the insert object
+  const insertObj: any = {
+    name: place.name,
+    city: place.city,
+    type: place.type || "classic",
+    display_name: place.displayName || null,
+    osm_id: place.osmId || null,
+    lat: place.lat ?? null,
+    long: place.long ?? null,
+    image_path: place.imagePath || null,
+    price: place.price ?? 0,
+    notes: place.notes || null,
+    // description is not in DB, but you may want to add it if you add a column
+  };
   const { data, error } = await supabase
     .from("places")
-    .insert([
-      {
-        name: placeData.name,
-        display_name: placeData.display_name,
-        type: "classic",
-        city: city,
-        specific_type: placeData.type ?? null,
-        osm_id: String(placeData.osm_id),
-        lat: parseFloat(placeData.lat),
-        long: parseFloat(placeData.lon),
-      },
-    ])
+    .insert([insertObj])
     .select();
-
   if (error) return { error };
   return data;
 }

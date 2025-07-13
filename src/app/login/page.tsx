@@ -111,7 +111,7 @@ export default function LoginPage() {
 
     return (
         <div className="flex flex-col items-center justify-center p-8 w-full h-full">
-            <div className="mt-24 rounded-xl p-8 w-1/4">
+            <div className="mb-12 rounded-xl p-8 w-1/4">
                 <h1 className="text-2xl font-semibold text-center mb-6">
                     {otpSent ? "Enter Verification Code" : "Sign In"}
                 </h1>

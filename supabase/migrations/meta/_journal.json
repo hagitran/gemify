@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1752386199981,
+      "tag": "0000_quiet_shard",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1752387005429,
+      "tag": "0001_numerous_karnak",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1752387126824,
+      "tag": "0002_tan_triton",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1752393984752,
+      "tag": "0003_illegal_quasimodo",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1752394044143,
+      "tag": "0004_swift_the_hunter",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1752396327390,
+      "tag": "0005_warm_proteus",
+      "breakpoints": true
+    }
+  ]
+}

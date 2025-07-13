@@ -22,11 +22,23 @@ const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+interface PlaceData {
+    name: string;
+    city: string;
+    type: string;
+    description: string;
+    imagePath: string;
+    coordinates?: [number, number];
+}
+
 export default function AddPlacePage() {
-    const [name, setName] = useState("");
-    const [city, setCity] = useState("");
-    const [type, setType] = useState("");
-    const [imagePath, setImagePath] = useState("");
+    const [placeData, setPlaceData] = useState<PlaceData>({
+        name: "",
+        city: "",
+        type: "",
+        description: "",
+        imagePath: ""
+    });
     const [result, setResult] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -42,16 +54,19 @@ export default function AddPlacePage() {
         setError(null);
         setResult(null);
         setLoading(true);
-        const res = await addPlace(city, name);
+        const res = await addPlace(placeData.city, placeData.name);
         setLoading(false);
         if (res && !Array.isArray(res) && res.error) {
             setError(typeof res.error === "string" ? res.error : res.error.message);
         } else {
             setResult(res);
-            setName("");
-            setCity("");
-            setType("");
-            setImagePath("");
+            setPlaceData({
+                name: "",
+                city: "",
+                type: "",
+                description: "",
+                imagePath: ""
+            });
         }
     }
 
@@ -73,7 +88,10 @@ export default function AddPlacePage() {
             } else {
                 // Get public URL
                 const { data: urlData } = supabase.storage.from('images').getPublicUrl(filePath);
-                setImagePath(urlData?.publicUrl || '');
+                setPlaceData(prev => ({
+                    ...prev,
+                    imagePath: urlData?.publicUrl || ''
+                }));
             }
         } catch (error) {
             setError('Failed to upload image. Please try again.');
@@ -112,7 +130,10 @@ export default function AddPlacePage() {
 
     function handlePlaceSelect(place: GeocodeResult['features'][0]) {
         setSelectedPlace(place);
-        setCity(place.properties.name);
+        setPlaceData(prev => ({
+            ...prev,
+            city: place.properties.name
+        }));
         setSearchQuery(place.properties.label);
         setSearchResults([]);
     }
@@ -137,9 +158,9 @@ export default function AddPlacePage() {
                                         <div className="animate-spin rounded-full h-8 w-8 border-2 border-zinc-300 border-t-zinc-700 mb-2"></div>
                                         <span className="text-zinc-700 text-sm font-medium">Uploading...</span>
                                     </div>
-                                ) : imagePath ? (
+                                ) : placeData.imagePath ? (
                                     <img
-                                        src={imagePath}
+                                        src={placeData.imagePath}
                                         alt="Preview"
                                         className="w-48 h-48 object-cover rounded-2xl"
                                     />
@@ -198,11 +219,38 @@ export default function AddPlacePage() {
                             <input
                                 type="text"
                                 placeholder="Name"
-                                value={ }
+                                value={placeData.name}
                                 onChange={(e) => {
-
+                                    setPlaceData(prev => ({
+                                        ...prev,
+                                        name: e.target.value
+                                    }));
                                 }}
                                 className="p-2 border border-zinc-300 w-full rounded-lg focus:outline-none focus:ring-2 text-md"
+                            />
+                            <input
+                                type="text"
+                                placeholder="Type (e.g., Restaurant, Cafe, Park)"
+                                value={placeData.type}
+                                onChange={(e) => {
+                                    setPlaceData(prev => ({
+                                        ...prev,
+                                        type: e.target.value
+                                    }));
+                                }}
+                                className="p-2 border border-zinc-300 w-full rounded-lg focus:outline-none focus:ring-2 text-md"
+                            />
+                            <textarea
+                                placeholder="Description"
+                                value={placeData.description}
+                                onChange={(e) => {
+                                    setPlaceData(prev => ({
+                                        ...prev,
+                                        description: e.target.value
+                                    }));
+                                }}
+                                rows={3}
+                                className="p-2 border border-zinc-300 w-full rounded-lg focus:outline-none focus:ring-2 text-md resize-none"
                             />
                         </div>
                         <button type="submit" className="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700 transition-colors font-medium" disabled={loading || imageUploading}>

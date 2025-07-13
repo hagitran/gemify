@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Image from "next/image";
+import { Topbar } from "./components/Topbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,8 +27,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className="flex flex-col min-h-screen font-geist bg-white text-zinc-700">
-        {/* <Topbar /> */}
-        <main className="flex-grow w-full flex items-center justify-center">
+        <Topbar />
+
+        <main className="flex-grow w-full h-full">
           {children}
         </main>
         {/* <Analytics /> */}

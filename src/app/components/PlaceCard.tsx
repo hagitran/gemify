@@ -8,7 +8,7 @@ export default function PlaceCard({ data, distance, empty }: { data: any; distan
       : { data: { publicUrl: data.image_path } };
     imageUrl = urlData?.publicUrl || null;
   }
-  console.log(distance)
+
   return (
     <div className="max-w-[220px] w-full">
       <div className="relative w-full">

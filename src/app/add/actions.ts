@@ -14,7 +14,6 @@ export async function addPlace(city: string, name: string) {
   }
 
   const placeData = osmData[0];
-  console.log(osmData[0]);
 
   const { data, error } = await supabase
     .from("places")

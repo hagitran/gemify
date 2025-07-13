@@ -1,23 +1,85 @@
-"use client"
+"use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { UserDropdown } from "./UserDropdown";
+import { QuerySelector } from "./QuerySelector";
+import { authClient } from "../lib/auth-client";
+import { usePathname } from "next/navigation";
 
-export default function Topbar() {
+export function Topbar() {
+    const pathname = usePathname();
+    const isRootPage = pathname === "/";
+
+    const {
+        data: session,
+        isPending,
+    } = authClient.useSession();
+
+    const handleSignOut = async () => {
+        try {
+            await authClient.signOut();
+        } catch (error) {
+            console.error("Error signing out:", error);
+        }
+    };
 
     return (
-        <div className="flex justify-center items-center h-24 z-50 px-4 sticky absolute top-0 left-0 w-full h-16 bg-white border-b border-zinc-300">
-            <div className="flex w-4/5 justify-between">
-                <Link href="/" className="flex cursor-pointer text-3xl tracking-tight text-black font-semibold py-1">
-                    <strong className="text-emerald-600">Gem</strong>ify
+        <header className="sticky top-0 z-50 w-full bg-zinc-50 border-b border-zinc-200 px-4 py-3">
+            <div className="max-w-7xl mx-auto flex items-center justify-between">
+                {/* Logo */}
+                <Link href="/" className="flex items-center gap-2 cursor-pointer">
+                    <div className="flex flex-row items-end gap-2">
+                        <h1 className="text-3xl font-bold tracking-tight">
+                            <strong className="text-emerald-600">Gem</strong>ify
+                        </h1>
+                        <span className="text-md text-zinc-500 hidden sm:inline">discover hidden gems</span>
+                    </div>
                 </Link>
 
-                <Link href="/add"
-                    className="flex items-center px-4 py-1 text-lg font-medium cursor-pointer hover:underline hover:underline-offset-4">
-                    Login
-                </Link>
+                {/* Center Section */}
+                <div className="flex items-center gap-4">
+                    {isRootPage && (
+                        <QuerySelector
+                            onCityChange={() => { }}
+                            onRootChange={() => { }}
+                        />
+                    )}
+                </div>
+
+                <div className="flex gap-2">
+                    <Link
+                        href="/add"
+                        className="px-4 py-2 text-sm text-zinc-700 hover:text-emerald-600 transition-colors"
+                    >
+                        Share a gem
+                        <div className="text-xs text-zinc-400">It's fast I promise</div>
+                    </Link>
+                    {/* User Profile */}
+                    <div className="flex items-center gap-4">
+                        {isPending ? (
+                            <div className="flex items-center gap-2 text-zinc-400">
+                                <div className="w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+                                <span className="text-sm">Loading...</span>
+                            </div>
+                        ) : session && session.user ? (
+                            <UserDropdown
+                                userName={session.user.name || session.user.email || 'User'}
+                                userEmail={session.user.email}
+                                onSignOut={handleSignOut}
+                            />
+                        ) : (
+                            <Link
+                                href="/login"
+                                className="px-4 py-2 text-sm text-zinc-700 hover:text-emerald-600 transition-colors"
+                            >
+                                Sign In
+                                <div className="text-xs text-zinc-400">Own your gems</div>
+                            </Link>
+                        )}
+                    </div>
+                </div>
             </div>
-        </div>
+        </header>
     );
 }

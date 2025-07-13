@@ -9,9 +9,16 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@auth/drizzle-adapter": "^1.10.0",
     "@geocodeearth/autocomplete-element": "^0.7.0",
     "@supabase/supabase-js": "^2.50.5",
+    "better-auth": "^1.2.12",
+    "dotenv": "^17.2.0",
+    "drizzle-orm": "^0.44.2",
     "next": "15.3.5",
+    "next-auth": "^4.24.11",
+    "pg": "^8.16.3",
+    "postgres": "^3.4.7",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
@@ -21,6 +28,7 @@
     "@types/node": "^20",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
+    "drizzle-kit": "^0.31.4",
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
     "tailwindcss": "^4",

@@ -40,7 +40,7 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 
 export default function Home() {
   const [city, setCity] = useState("hcmc");
-  const [root, setRoot] = useState("classic");
+  const [root, setRoot] = useState("All");
   const [routeData, setRouteData] = useState<any>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; long: number } | null>(null);
 

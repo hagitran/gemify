@@ -32,6 +32,7 @@ export default function LoginPage() {
             }
         } catch (err) {
             setError("Failed to sign in with Google");
+            console.log(err)
             setLoading(false);
         }
     }
@@ -57,6 +58,7 @@ export default function LoginPage() {
             }
         } catch (err) {
             setError("Failed to sign in");
+            console.log(err)
             setLoading(false);
         }
     }
@@ -91,6 +93,7 @@ export default function LoginPage() {
             }
         } catch (err) {
             setError("Failed to sign up");
+            console.log(err)
             setLoading(false);
         }
     }

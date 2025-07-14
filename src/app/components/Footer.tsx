@@ -6,9 +6,9 @@ export default function Footer() {
     const pathname = usePathname();
     if (pathname !== '/') return null;
     return (
-        <footer className="flex gap-[12px] flex-wrap items-center justify-center py-8">
+        <footer className="flex gap-[12px] flex-wrap items-center justify-end px-8 py-8">
             <a
-                className="flex items-center gap-2 hover:underline hover:underline-offset-4"
+                className="flex items-center gap-2 hover:underline hover:underline-offset-4 text-zinc-600"
                 href="https://hagitran.com"
                 target="_blank"
                 rel="noopener noreferrer"

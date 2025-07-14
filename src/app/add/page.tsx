@@ -290,7 +290,7 @@ export default function AddPlacePage() {
         <div className="flex flex-1 w-full h-full flex-col">
             <div className="flex flex-row w-full h-full flex-1 mx-auto">
                 {/* Preview Side */}
-                <div className="flex flex-col items-center justify-center flex-1 bg-zinc-50 h-full">
+                <div className="flex flex-col items-center justify-center flex-1 bg-zinc-50 min-h-full">
                     <h1 className="text-xl font-medium mb-4">Preview</h1>
                     <div className="flex items-center justify-center min-h-[400px] min-w-[320px]">
                         <PlaceCard data={placeData} />

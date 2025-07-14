@@ -5,16 +5,12 @@ import { authClient } from "../lib/auth-client";
 
 export default function LoginPage() {
     const router = useRouter();
-    const [email, setEmail] = useState("");
-    const [otp, setOtp] = useState("");
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
-    const [otpSent, setOtpSent] = useState(false);
+    // const [otpSent, setOtpSent] = useState(false);
 
     async function signInWithGoogle() {
         setLoading(true);
-        setError(null);
 
         try {
             const { error } = await authClient.signIn.social({
@@ -22,7 +18,7 @@ export default function LoginPage() {
             });
 
             if (error) {
-                setError(error.message || "Failed to sign in with Google");
+                // setError(error.message || "Failed to sign in with Google"); // This line was removed
                 setLoading(false);
             } else {
                 setSuccess(true);
@@ -33,7 +29,7 @@ export default function LoginPage() {
                 }, 1500);
             }
         } catch (err) {
-            setError("Failed to sign in with Google");
+            // setError("Failed to sign in with Google"); // This line was removed
             setLoading(false);
         }
     }
@@ -88,13 +84,13 @@ export default function LoginPage() {
     //     });
     // }
 
-    function resetForm() {
-        setEmail("");
-        setOtp("");
-        setError(null);
-        setSuccess(false);
-        setOtpSent(false);
-    }
+    // function resetForm() { // This function was removed
+    //     setEmail("");
+    //     setOtp("");
+    //     setError(null);
+    //     setSuccess(false);
+    //     setOtpSent(false);
+    // }
 
     if (success) {
         return (
@@ -113,10 +109,10 @@ export default function LoginPage() {
         <div className="flex flex-col items-center justify-center p-8 w-full h-full">
             <div className="mb-12 rounded-xl p-8 w-1/4">
                 <h1 className="text-2xl font-semibold text-center mb-6">
-                    {otpSent ? "Enter Verification Code" : "Sign In"}
+                    {"Sign In"}
                 </h1>
 
-                {!otpSent && (
+                {(
                     <>
                         {/* Google Sign In Button */}
                         <button

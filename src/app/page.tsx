@@ -12,13 +12,6 @@ const getCookie = (name: string) => {
   return null;
 };
 
-const setCookie = (name: string, value: string, days = 365) => {
-  if (typeof document === 'undefined') return;
-  const expires = new Date();
-  expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
-  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
-};
-
 function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
   const toRad = (x: number) => (x * Math.PI) / 180;
   const R = 6371; // km
@@ -35,12 +28,29 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   return R * c;
 }
 
+interface Place {
+  id?: string;
+  name: string;
+  city: string;
+  type: string;
+  address: string;
+  image_path: string;
+  price: number;
+  lat?: number;
+  long?: number;
+  displayName?: string;
+  osmId?: string;
+  notes: string;
+  added_by: string;
+  description: string;
+}
+
 export default function Home() {
   const [city, setCity] = useState("hcmc");
   const [root, setRoot] = useState("All");
-  const [routeData, setRouteData] = useState<any>(null);
+  const [routeData, setRouteData] = useState<Place[] | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; long: number } | null>(null);
-  const cityCache = useRef<{ [key: string]: any }>({});
+  const cityCache = useRef<{ [key: string]: Place[] | null }>({});
 
   // Helper to map UI root to DB value
   function mapRootToDb(root: string) {
@@ -130,9 +140,9 @@ export default function Home() {
 
           {root && routeData && (
             <div className="flex w-full h-full flex-col gap-4 justify-center items-center">
-              {Array.isArray(routeData) && routeData.length > 0 && (
+              {Array.isArray(routeData) && (routeData as Place[]).length > 0 && (
                 <div className="flex w-full flex-wrap gap-x-8 gap-y-8 mt-2 max-w-6xl mx-auto justify-center items-center">
-                  {routeData.map((place: any) => {
+                  {(routeData as Place[]).map((place: Place) => {
                     let distance = null;
                     if (
                       userLocation &&

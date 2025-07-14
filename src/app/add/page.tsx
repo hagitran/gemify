@@ -307,7 +307,7 @@ export default function AddPlacePage() {
                             <input
                                 id="geocode-search"
                                 type="text"
-                                placeholder="Search for a place and we'll fill the rest!"
+                                placeholder="Search for a place's name and we'll autofill the details."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="p-2 border border-zinc-300 w-full rounded-lg focus:outline-none focus:ring-2 text-md"

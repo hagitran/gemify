@@ -37,7 +37,7 @@ export default function PlaceCard({ data, distance }: { data: Place; distance?: 
         )}
         {/* Type badge overlay */}
         <span className="absolute top-2 left-2 bg-white/90 text-gray-900 text-xs font-semibold rounded-full px-3 py-1 shadow-sm">
-          {data.type || "What type?"}
+          {data.type.charAt(0).toUpperCase() + data.type.slice(1) || "What type?"}
         </span>
         {/* Heart icon overlay */}
         <span className="absolute top-2 right-2 bg-white/90 rounded-full p-1 shadow-sm">

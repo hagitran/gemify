@@ -11,6 +11,7 @@ interface GeocodeResult {
         properties: {
             name: string;
             label: string;
+            source?: string; // Add source for Photon/Nominatim
         };
         geometry: {
             coordinates: [number, number];
@@ -28,14 +29,15 @@ interface PlaceData {
     city: string;
     type: string;
     address: string;
-    description: string;
-    imagePath: string;
+    image_path: string;
     price: number;
     lat?: number;
     long?: number;
     displayName?: string;
     osmId?: string;
     notes: string;
+    added_by: string;
+    description: string;
 }
 
 export default function AddPlacePage() {
@@ -44,11 +46,13 @@ export default function AddPlacePage() {
         city: "",
         type: "",
         address: "",
-        description: "",
-        imagePath: "",
+        image_path: "",
         price: 0,
         notes: "",
+        added_by: "anon",
+        description: "",
     });
+
     const [result, setResult] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -58,8 +62,6 @@ export default function AddPlacePage() {
     const [isSearching, setIsSearching] = useState(false);
     const [selectedPlace, setSelectedPlace] = useState<GeocodeResult['features'][0] | null>(null);
     const [imageUploading, setImageUploading] = useState(false);
-
-    console.log(placeData)
 
     async function handleAdd(e: React.FormEvent) {
         e.preventDefault();
@@ -77,11 +79,15 @@ export default function AddPlacePage() {
                 city: "",
                 type: "",
                 address: "",
-                description: "",
-                imagePath: "",
+                image_path: "",
                 price: 0,
                 notes: "",
+                description: "",
+                added_by: "anon",
             });
+            // Invalidate city cache in Home page
+            const cityValue = placeData.city === "San Francisco" ? "sf" : "hcmc";
+            window.dispatchEvent(new CustomEvent('invalidateCityCache', { detail: { city: cityValue } }));
         }
     }
 
@@ -105,7 +111,7 @@ export default function AddPlacePage() {
                 const { data: urlData } = supabase.storage.from('images').getPublicUrl(filePath);
                 setPlaceData(prev => ({
                     ...prev,
-                    imagePath: urlData?.publicUrl || ''
+                    image_path: urlData?.publicUrl || ''
                 }));
             }
         } catch (error) {
@@ -124,17 +130,47 @@ export default function AddPlacePage() {
 
         setIsSearching(true);
         try {
-            const api_key = process.env.NEXT_PUBLIC_GEOCODE_API_KEY;
-            const response = await fetch(
-                `https://api.geocode.earth/v1/autocomplete?api_key=${api_key}&focus.point.lat=10.8035553&focus.point.lon=106.6976776&text=${encodeURIComponent(query)}`
-            );
+            const lat = 10.8035553;
+            const lon = 106.6976776;
+            const limit = 5;
+            // Photon API
+            const photonUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&lat=${lat}&lon=${lon}&limit=${limit}`;
+            // Nominatim API
+            const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=geojson&q=${encodeURIComponent(query)}&limit=${limit}`;
 
-            if (!response.ok) {
+            // Fetch both in parallel
+            const [photonRes, nominatimRes] = await Promise.all([
+                fetch(photonUrl),
+                fetch(nominatimUrl)
+            ]);
+
+            if (!photonRes.ok && !nominatimRes.ok) {
                 throw new Error('Failed to fetch places');
             }
 
-            const data: GeocodeResult = await response.json();
-            setSearchResults(data.features || []);
+            const photonData = photonRes.ok ? await photonRes.json() : { features: [] };
+            const nominatimData = nominatimRes.ok ? await nominatimRes.json() : { features: [] };
+
+            // Normalize Nominatim results to match Photon structure
+            const nominatimFeatures = (nominatimData.features || []).map((f: any) => ({
+                ...f,
+                properties: {
+                    ...f.properties,
+                    label: f.properties.display_name,
+                    name: f.properties.display_name?.split(",")[0] || f.properties.display_name,
+                    source: "nominatim"
+                }
+            }));
+
+            const photonFeatures = (photonData.features || []).map((f: any) => ({
+                ...f,
+                properties: {
+                    ...f.properties,
+                    source: "photon"
+                }
+            }));
+
+            setSearchResults([...nominatimFeatures, ...photonFeatures]);
         } catch (error) {
             console.error('Error searching places:', error);
             setError('Failed to search places');
@@ -143,13 +179,35 @@ export default function AddPlacePage() {
         }
     }
 
-    function handlePlaceSelect(place: GeocodeResult['features'][0]) {
+    function handlePlaceSelect(place: any) {
+        const isNominatim = place.properties?.source === "nominatim";
+        const [long, lat] = place.geometry?.coordinates || [];
         setSelectedPlace(place);
         setPlaceData(prev => ({
             ...prev,
-            city: place.properties.name
+            name: place.properties?.name || place.name || prev.name,
+            address: isNominatim
+                ? place.properties?.display_name || prev.address
+                : (place.properties?.housenumber && place.properties?.street
+                    ? `${place.properties.housenumber} ${place.properties.street}`
+                    : place.properties?.street || place.street || prev.address),
+            city: isNominatim
+                ? (
+                    // Try to extract city from display_name (split by comma, look for city-like part)
+                    place.properties?.display_name?.split(",").slice(-4, -3)[0]?.trim() || prev.city
+                )
+                : place.properties?.locality || place.properties?.region || place.locality || place.region || prev.city,
+            displayName: place.properties?.label || place.label || prev.displayName,
+            osmId: isNominatim
+                ? place.properties?.osm_id?.toString() || prev.osmId
+                : place.properties?.id || place.id || prev.osmId,
+            type: isNominatim
+                ? place.properties?.type || place.properties?.category || prev.type
+                : prev.type,
+            lat: lat ?? prev.lat,
+            long: long ?? prev.long,
         }));
-        setSearchQuery(place.properties.label);
+        setSearchQuery(place.properties?.label || place.label || '');
         setSearchResults([]);
     }
 
@@ -157,6 +215,18 @@ export default function AddPlacePage() {
     function handlePriceSelect(price: number) {
         setPlaceData(prev => ({ ...prev, price }));
     }
+
+    // Debounced search effect
+    useEffect(() => {
+        if (!searchQuery.trim()) {
+            setSearchResults([]);
+            return;
+        }
+        const handler = setTimeout(() => {
+            searchPlaces(searchQuery);
+        }, 500);
+        return () => clearTimeout(handler);
+    }, [searchQuery]);
 
     return (
         <div className="flex flex-1 w-full h-full flex-col">
@@ -197,10 +267,7 @@ export default function AddPlacePage() {
                                 type="text"
                                 placeholder="Search for a place and we'll fill the rest!"
                                 value={searchQuery}
-                                onChange={(e) => {
-                                    setSearchQuery(e.target.value);
-                                    searchPlaces(e.target.value);
-                                }}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                                 className="p-2 border border-zinc-300 w-full rounded-lg focus:outline-none focus:ring-2 text-md"
                             />
                             {isSearching && (
@@ -211,7 +278,7 @@ export default function AddPlacePage() {
                                     </div>
                                 </div>
                             )}
-                            {searchResults.length > 0 && (
+                            {(searchResults.length > 0 && !selectedPlace) && (
                                 <div className="absolute mt-12 bg-white border border-zinc-200 rounded-lg max-h-48 overflow-y-auto z-10 shadow-lg">
                                     {searchResults.map((place, index) => (
                                         <button
@@ -221,6 +288,7 @@ export default function AddPlacePage() {
                                         >
                                             <div className="font-semibold text-zinc-900">{place.properties.name}</div>
                                             <div className="text-sm text-zinc-500 mt-1">{place.properties.label}</div>
+                                            <div className="text-xs text-emerald-500 mt-1">{place.properties.source === "photon" ? "Photon" : "Nominatim"}</div>
                                         </button>
                                     ))}
                                 </div>
@@ -236,9 +304,9 @@ export default function AddPlacePage() {
                                             <div className="animate-spin rounded-full h-8 w-8 border-2 border-zinc-300 border-t-zinc-700"></div>
                                             <span className="text-zinc-700 text-sm font-medium">Uploading...</span>
                                         </div>
-                                    ) : placeData.imagePath ? (
+                                    ) : placeData.image_path ? (
                                         <img
-                                            src={placeData.imagePath}
+                                            src={placeData.image_path}
                                             alt="Preview"
                                             className="w-64 h-64 object-cover rounded-2xl"
                                         />
@@ -281,12 +349,11 @@ export default function AddPlacePage() {
                                         onChange={(e) => setPlaceData(prev => ({ ...prev, type: e.target.value }))}
                                         className="p-2 border border-zinc-300 w-full rounded-lg focus:outline-none focus:ring-2 text-md"
                                     >
-                                        <option value="classic">Select a type</option>
+                                        <option value="">Select a type</option>
                                         <option value="classic">Classic</option>
                                         <option value="foodie">Foodie</option>
-                                        <option value="cafe">Cafe</option>
-                                        <option value="park">Park</option>
-                                        <option value="shop">Shop</option>
+                                        <option value="cafe">Scenic</option>
+                                        <option value="park">Experiences</option>
                                     </select>
                                 </div>
                                 <div className="flex flex-col">

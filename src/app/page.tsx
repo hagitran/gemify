@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getRouteData } from "./actions";
 import PlaceCard from "./components/PlaceCard";
 import Link from "next/link";
@@ -43,7 +43,7 @@ export default function Home() {
   const [root, setRoot] = useState("All");
   const [routeData, setRouteData] = useState<any>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; long: number } | null>(null);
-
+  const cityCache = useRef<{ [city: string]: any }>({});
 
 
   const rootOptions = ["Scenic", "Foodie", "Experiences", "All"];
@@ -82,9 +82,34 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [city, root]);
 
+  // Listen for cache invalidation events
   useEffect(() => {
-    getRouteData(city, root).then(setRouteData);
-  }, [root]);
+    function handleInvalidate(e: any) {
+      if (e?.detail?.city) {
+        delete cityCache.current[e.detail.city];
+      } else {
+        cityCache.current = {};
+      }
+      // Optionally refetch if on that city
+      getRouteData(city, root).then(data => {
+        cityCache.current[city] = data;
+        setRouteData(data);
+      });
+    }
+    window.addEventListener('invalidateCityCache', handleInvalidate);
+    return () => window.removeEventListener('invalidateCityCache', handleInvalidate);
+  }, [city, root]);
+
+  useEffect(() => {
+    if (cityCache.current[city]) {
+      setRouteData(cityCache.current[city]);
+    } else {
+      getRouteData(city, root).then(data => {
+        cityCache.current[city] = data;
+        setRouteData(data);
+      });
+    }
+  }, [city]);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -102,20 +127,15 @@ export default function Home() {
 
 
   return (
-    <div className="flex w-full flex-col font-[family-name:var(--font-geist-sans)] text-zinc-700">
+    <div className="flex w-full h-full flex-col font-[family-name:var(--font-geist-sans)] text-zinc-700">
       <main className="flex flex-col flex-1 gap-8 items-center pt-8">
 
-        <div className="flex justify-center items-center w-full flex-col gap-8">
+        <div className="flex justify-center items-center w-full h-full flex-col gap-8">
 
-          <div
-            className={`flex justify-center gap-8 ${root ? 'flex-row items-center py-4 !gap-16' : 'flex-col items-center'} transition-all duration-300`}
-          >
-
-          </div>
           {root && routeData && (
-            <div className="flex w-full flex-col gap-4 justify-center">
+            <div className="flex w-full h-full flex-col gap-4 justify-center items-center">
               {Array.isArray(routeData) && routeData.length > 0 && (
-                <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-x-6 gap-y-8 mt-2 max-w-6xl mx-auto justify-center">
+                <div className="flex w-full flex-wrap gap-x-8 gap-y-8 mt-2 max-w-6xl mx-auto justify-center items-center">
                   {routeData.map((place: any) => {
                     let distance = null;
                     if (

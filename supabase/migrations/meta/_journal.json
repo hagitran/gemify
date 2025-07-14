@@ -43,6 +43,34 @@
       "when": 1752396327390,
       "tag": "0005_warm_proteus",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1752420349047,
+      "tag": "0006_sticky_blackheart",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1752421125872,
+      "tag": "0007_fat_malcolm_colcord",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1752421650202,
+      "tag": "0008_magical_puma",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1752422079560,
+      "tag": "0009_public_wild_child",
+      "breakpoints": true
     }
   ]
 }

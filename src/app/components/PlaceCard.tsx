@@ -2,12 +2,14 @@ import supabase from '../../supabaseClient';
 
 export default function PlaceCard({ data, distance }: { data: any; distance?: number }) {
 
+  console.log(data, 'data')
+
   return (
     <div className="max-w-[220px] w-full">
       <div className="relative w-48">
-        {data.imagePath ? (
+        {data.image_path ? (
           <img
-            src={data.imagePath}
+            src={data.image_path}
             alt={data.name || data.displayName || 'Preview'}
             className="aspect-square object-cover rounded-2xl w-48 h-48 bg-zinc-200"
           />

@@ -173,7 +173,7 @@ export default function LoginPage() {
                             disabled={loading}
                             className="w-full bg-emerald-600 cursor-pointer text-white py-3 px-4 rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
-                            {loading ? "Sending code..." : "Send Verification Code"}
+                            {loading ? "Sending code..." : "Send Code"}
                         </button>
                     </form>
                 ) : (

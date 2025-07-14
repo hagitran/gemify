@@ -6,13 +6,17 @@ import {
   timestamp,
   smallint,
   doublePrecision,
+  integer,
+  foreignKey,
 } from "drizzle-orm/pg-core";
 
 // Import auth schema
+import { user } from "../../auth-schema";
+
 export * from "../../auth-schema";
 
 export const placesTable = pgTable("places", {
-  id: bigint("id", { mode: "number" }).primaryKey(),
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   name: text("name"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
@@ -28,7 +32,19 @@ export const placesTable = pgTable("places", {
   imagePath: text("image_path"),
   price: smallint("price").default(0),
   addedBy: text("added_by").default("anon"),
+  notes: text("notes"),
+});
+
+export const userNotesTable = pgTable("user_notes", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: text("user_id").references(() => user.id),
+  placeId: bigint("place_id", { mode: "number" })
+    .notNull()
+    .references(() => placesTable.id),
+  note: text("note"),
 });
 
 export type InsertPlace = typeof placesTable.$inferInsert;
 export type SelectPlace = typeof placesTable.$inferSelect;
+export type InsertUserNote = typeof userNotesTable.$inferInsert;
+export type SelectUserNote = typeof userNotesTable.$inferSelect;

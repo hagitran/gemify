@@ -26,7 +26,7 @@ interface QuerySelectorProps {
 export function QuerySelector({ onCityChange, onRootChange }: QuerySelectorProps) {
     const [city, setCity] = useState("hcmc");
     const [root, setRoot] = useState("All");
-    const rootOptions = ["Scenic", "Foodie", "Experiences", "All"];
+    const rootOptions = ["Food", "Cafe", "Experience", "All"];
 
     // Load user preferences from cookies
     useEffect(() => {

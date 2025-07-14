@@ -94,7 +94,6 @@ type AddPlaceResult = PlaceData[] | { error: unknown };
 
 export default function AddPlacePage() {
     const { data: session } = authClient.useSession();
-    console.log(session, 'ss')
     const [placeData, setPlaceData] = useState<PlaceData>({
         name: "",
         city: "",
@@ -125,10 +124,6 @@ export default function AddPlacePage() {
             ...placeData,
             added_by: session?.user?.id || "anon"
         });
-        console.log({
-            ...placeData,
-            added_by: session?.user?.id || "anon"
-        }, 'tests')
         setLoading(false);
         if (res && !Array.isArray(res) && 'error' in res && res.error) {
             setError(typeof res.error === "string" ? res.error : (res.error as Error).message || String(res.error));

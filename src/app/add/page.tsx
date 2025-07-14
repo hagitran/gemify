@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { addPlace } from "./actions";
 import PlaceCard from "../components/PlaceCard";
 import { createClient } from '@supabase/supabase-js';
+import { authClient } from "../lib/auth-client";
+import confetti from "canvas-confetti";
 
 // interface GeocodeResult {
 //     features: Array<{
@@ -91,6 +93,8 @@ type GeocodeFeature = NominatimFeature | PhotonFeature;
 type AddPlaceResult = PlaceData[] | { error: unknown };
 
 export default function AddPlacePage() {
+    const { data: session } = authClient.useSession();
+    console.log(session, 'ss')
     const [placeData, setPlaceData] = useState<PlaceData>({
         name: "",
         city: "",
@@ -117,7 +121,14 @@ export default function AddPlacePage() {
         setError(null);
         setResult(null);
         setLoading(true);
-        const res: AddPlaceResult = await addPlace(placeData);
+        const res: AddPlaceResult = await addPlace({
+            ...placeData,
+            added_by: session?.user?.id || "anon"
+        });
+        console.log({
+            ...placeData,
+            added_by: session?.user?.id || "anon"
+        }, 'tests')
         setLoading(false);
         if (res && !Array.isArray(res) && 'error' in res && res.error) {
             setError(typeof res.error === "string" ? res.error : (res.error as Error).message || String(res.error));
@@ -269,6 +280,16 @@ export default function AddPlacePage() {
         }, 500);
         return () => clearTimeout(handler);
     }, [searchQuery]);
+
+    useEffect(() => {
+        if (result && !('error' in result)) {
+            confetti({
+                particleCount: 120,
+                spread: 80,
+                origin: { y: 0.7 },
+            });
+        }
+    }, [result]);
 
     return (
         <div className="flex flex-1 w-full h-full flex-col">
@@ -446,7 +467,7 @@ export default function AddPlacePage() {
                         <button type="submit" className="bg-emerald-600 cursor-pointer text-white px-4 py-2 rounded hover:bg-emerald-700 transition-colors font-medium mt-4" disabled={loading || imageUploading}>
                             {loading ? "Adding..." : imageUploading ? "Uploading image..." : "Add Place"}
                         </button>
-                        {result && <span className="text-green-600">Added!</span>}
+                        {/* {result && <span className="text-green-600">Added!</span>} */}
                         {error && <span className="text-red-600">{error}</span>}
                     </form>
                 </div>

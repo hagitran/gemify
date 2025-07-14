@@ -29,7 +29,7 @@ export const placesTable = pgTable("places", {
   city: text("city"),
   imagePath: text("image_path"),
   price: smallint("price").default(0),
-  addedBy: text("added_by").default("anon"),
+  addedBy: text("added_by").references(() => user.id),
   notes: text("notes"),
 });
 

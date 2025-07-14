@@ -112,8 +112,8 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="flex flex-col items-center justify-center p-8 w-full h-full">
-            <div className="mb-12 rounded-xl p-8 w-1/4">
+        <div className="flex flex-col items-center justify-center min-h-screen w-full px-2 sm:px-8 py-8">
+            <div className="mb-12 rounded-xl p-6 sm:p-8 w-full max-w-sm">
                 <h1 className="text-2xl font-semibold text-center mb-6">
                     {showSignUp ? "Sign Up" : "Sign In"}
                 </h1>

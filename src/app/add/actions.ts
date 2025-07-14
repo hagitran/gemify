@@ -29,6 +29,7 @@ export async function addPlace(place: {
     image_path: place.image_path || null,
     price: place.price ?? 0,
     notes: place.notes || null,
+    added_by: place.added_by || "anon",
     // description is not in DB, but you may want to add it if you add a column
   };
   const { data, error } = await supabase

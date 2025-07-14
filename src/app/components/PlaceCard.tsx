@@ -19,8 +19,6 @@ interface Place {
 
 export default function PlaceCard({ data, distance }: { data: Place; distance?: number }) {
 
-  console.log(data, 'data')
-
   return (
     <div className="max-w-[220px] w-full">
       <div className="relative w-48">

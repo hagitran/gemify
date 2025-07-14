@@ -124,6 +124,7 @@ export default function Home() {
           setUserLocation({ lat: pos.coords.latitude, long: pos.coords.longitude });
         },
         (err) => {
+          console.log(err)
           // Optionally handle error
         }
       );

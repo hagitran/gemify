@@ -4,18 +4,18 @@ import { addPlace } from "./actions";
 import PlaceCard from "../components/PlaceCard";
 import { createClient } from '@supabase/supabase-js';
 
-interface GeocodeResult {
-    features: Array<{
-        properties: {
-            name: string;
-            label: string;
-            source?: string; // Add source for Photon/Nominatim
-        };
-        geometry: {
-            coordinates: [number, number];
-        };
-    }>;
-}
+// interface GeocodeResult {
+//     features: Array<{
+//         properties: {
+//             name: string;
+//             label: string;
+//             source?: string; // Add source for Photon/Nominatim
+//         };
+//         geometry: {
+//             coordinates: [number, number];
+//         };
+//     }>;
+// }
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -38,6 +38,58 @@ interface PlaceData {
     description: string;
 }
 
+// Add Nominatim types
+interface NominatimProperties {
+    addresstype: string;
+    category: string;
+    display_name: string;
+    importance: number;
+    label: string;
+    name: string;
+    osm_id: number;
+    osm_type: string;
+    place_id: number;
+    place_rank: number;
+    source: 'nominatim';
+    type: string;
+    [key: string]: unknown;
+}
+
+interface NominatimGeometry {
+    type: 'Point';
+    coordinates: [number, number];
+}
+
+interface NominatimFeature {
+    bbox: [number, number, number, number];
+    geometry: NominatimGeometry;
+    properties: NominatimProperties;
+    type: 'Feature';
+}
+
+// Photon type (minimal, for union)
+interface PhotonProperties {
+    name: string;
+    label: string;
+    source: 'photon';
+    [key: string]: unknown;
+}
+interface PhotonGeometry {
+    type: 'Point';
+    coordinates: [number, number];
+}
+interface PhotonFeature {
+    geometry: PhotonGeometry;
+    properties: PhotonProperties;
+    type: 'Feature';
+}
+
+type GeocodeFeature = NominatimFeature | PhotonFeature;
+
+// Add type for addPlace result
+
+type AddPlaceResult = PlaceData[] | { error: unknown };
+
 export default function AddPlacePage() {
     const [placeData, setPlaceData] = useState<PlaceData>({
         name: "",
@@ -51,13 +103,13 @@ export default function AddPlacePage() {
         description: "",
     });
 
-    const [result, setResult] = useState<any>(null);
+    const [result, setResult] = useState<AddPlaceResult | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
-    const [searchResults, setSearchResults] = useState<GeocodeResult['features']>([]);
+    const [searchResults, setSearchResults] = useState<GeocodeFeature[]>([]);
     const [isSearching, setIsSearching] = useState(false);
-    const [selectedPlace, setSelectedPlace] = useState<GeocodeResult['features'][0] | null>(null);
+    const [selectedPlace, setSelectedPlace] = useState<GeocodeFeature | null>(null);
     const [imageUploading, setImageUploading] = useState(false);
 
     async function handleAdd(e: React.FormEvent) {
@@ -65,10 +117,10 @@ export default function AddPlacePage() {
         setError(null);
         setResult(null);
         setLoading(true);
-        const res = await addPlace(placeData);
+        const res: AddPlaceResult = await addPlace(placeData);
         setLoading(false);
-        if (res && !Array.isArray(res) && res.error) {
-            setError(typeof res.error === "string" ? res.error : res.error.message);
+        if (res && !Array.isArray(res) && 'error' in res && res.error) {
+            setError(typeof res.error === "string" ? res.error : (res.error as Error).message || String(res.error));
         } else {
             setResult(res);
             setPlaceData({
@@ -97,7 +149,7 @@ export default function AddPlacePage() {
 
         try {
             const filePath = `uploads/${Date.now()}_${file.name}`;
-            const { data, error } = await supabase.storage.from('images').upload(filePath, file);
+            const { error } = await supabase.storage.from('images').upload(filePath, file);
 
             if (error) {
                 setError(error.message);
@@ -110,6 +162,7 @@ export default function AddPlacePage() {
                 }));
             }
         } catch (error) {
+            console.log(error)
             setError('Failed to upload image. Please try again.');
         } finally {
             setImageUploading(false);
@@ -142,11 +195,11 @@ export default function AddPlacePage() {
                 throw new Error('Failed to fetch places');
             }
 
-            const photonData = photonRes.ok ? await photonRes.json() : { features: [] };
-            const nominatimData = nominatimRes.ok ? await nominatimRes.json() : { features: [] };
+            const photonData: { features: PhotonFeature[] } = photonRes.ok ? await photonRes.json() : { features: [] };
+            const nominatimData: { features: NominatimFeature[] } = nominatimRes.ok ? await nominatimRes.json() : { features: [] };
 
             // Normalize Nominatim results to match Photon structure
-            const nominatimFeatures = (nominatimData.features || []).map((f: any) => ({
+            const nominatimFeatures: NominatimFeature[] = (nominatimData.features || []).map((f) => ({
                 ...f,
                 properties: {
                     ...f.properties,
@@ -156,7 +209,7 @@ export default function AddPlacePage() {
                 }
             }));
 
-            const photonFeatures = (photonData.features || []).map((f: any) => ({
+            const photonFeatures: PhotonFeature[] = (photonData.features || []).map((f) => ({
                 ...f,
                 properties: {
                     ...f.properties,
@@ -173,35 +226,30 @@ export default function AddPlacePage() {
         }
     }
 
-    function handlePlaceSelect(place: any) {
-        const isNominatim = place.properties?.source === "nominatim";
-        const [long, lat] = place.geometry?.coordinates || [];
+    function handlePlaceSelect(place: GeocodeFeature) {
+        const isNominatim = place.properties.source === "nominatim";
+        const [long, lat] = place.geometry.coordinates;
         setSelectedPlace(place);
         setPlaceData(prev => ({
             ...prev,
-            name: place.properties?.name || place.name || prev.name,
+            name: place.properties.name || prev.name,
             address: isNominatim
-                ? place.properties?.display_name || prev.address
-                : (place.properties?.housenumber && place.properties?.street
-                    ? `${place.properties.housenumber} ${place.properties.street}`
-                    : place.properties?.street || place.street || prev.address),
+                ? (place.properties as NominatimProperties).display_name || prev.address
+                : (place.properties as PhotonProperties).street ? String((place.properties as PhotonProperties).street) : prev.address,
             city: isNominatim
-                ? (
-                    // Try to extract city from display_name (split by comma, look for city-like part)
-                    place.properties?.display_name?.split(",").slice(-4, -3)[0]?.trim() || prev.city
-                )
-                : place.properties?.locality || place.properties?.region || place.locality || place.region || prev.city,
-            displayName: place.properties?.label || place.label || prev.displayName,
+                ? ((place.properties as NominatimProperties).display_name?.split(",").slice(-4, -3)[0]?.trim() || prev.city)
+                : (place.properties as PhotonProperties).locality ? String((place.properties as PhotonProperties).locality) : prev.city,
+            displayName: place.properties.label || prev.displayName,
             osmId: isNominatim
-                ? place.properties?.osm_id?.toString() || prev.osmId
-                : place.properties?.id || place.id || prev.osmId,
+                ? ((place.properties as NominatimProperties).osm_id !== undefined ? String((place.properties as NominatimProperties).osm_id) : prev.osmId)
+                : ((place.properties as PhotonProperties).id !== undefined ? String((place.properties as PhotonProperties).id) : prev.osmId),
             type: isNominatim
-                ? place.properties?.type || place.properties?.category || prev.type
+                ? (place.properties as NominatimProperties).type || (place.properties as NominatimProperties).category || prev.type
                 : prev.type,
             lat: lat ?? prev.lat,
             long: long ?? prev.long,
         }));
-        setSearchQuery(place.properties?.label || place.label || '');
+        setSearchQuery(place.properties.label || '');
         setSearchResults([]);
     }
 

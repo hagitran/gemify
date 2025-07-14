@@ -30,6 +30,7 @@ export default function LoginPage() {
             }
         } catch (err) {
             // setError("Failed to sign in with Google"); // This line was removed
+            console.log(err)
             setLoading(false);
         }
     }

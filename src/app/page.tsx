@@ -3,10 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { getRouteData } from "./actions";
 import PlaceCard from "./components/PlaceCard";
-import Link from "next/link";
-import { authClient } from "./lib/auth-client";
 
-// Cookie utilities
 const getCookie = (name: string) => {
   if (typeof document === 'undefined') return null;
   const value = `; ${document.cookie}`;
@@ -43,29 +40,20 @@ export default function Home() {
   const [root, setRoot] = useState("All");
   const [routeData, setRouteData] = useState<any>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; long: number } | null>(null);
-  const cityCache = useRef<{ [city: string]: any }>({});
+  const cityCache = useRef<{ [key: string]: any }>({});
 
-
-  const rootOptions = ["Scenic", "Foodie", "Experiences", "All"];
+  // Helper to map UI root to DB value
+  function mapRootToDb(root: string) {
+    return root === "All" ? null : root.toLowerCase();
+  }
 
   // Load user preferences from cookies
   useEffect(() => {
     const savedCity = getCookie('preferredCity');
     const savedRoot = getCookie('preferredRoot');
-
     if (savedCity) setCity(savedCity);
     if (savedRoot) setRoot(savedRoot);
   }, []);
-
-  const savePrefs = (newCity?: string, newRoot?: string) => {
-    const cityToSave = newCity || city;
-    const rootToSave = newRoot || root;
-
-    setCookie('preferredCity', cityToSave);
-    setCookie('preferredRoot', rootToSave);
-
-    console.log('Saving to cookies:', { preferredCity: cityToSave, preferredRoot: rootToSave });
-  };
 
   // Listen for cookie changes from QuerySelector
   useEffect(() => {
@@ -84,15 +72,21 @@ export default function Home() {
 
   // Listen for cache invalidation events
   useEffect(() => {
-    function handleInvalidate(e: any) {
-      if (e?.detail?.city) {
-        delete cityCache.current[e.detail.city];
+    function handleInvalidate(e: Event) {
+      const customEvent = e as CustomEvent<{ city: string }>;
+      const dbRoot = mapRootToDb(root);
+      const cacheKey = `${city}:${dbRoot ?? "all"}`;
+      if (customEvent?.detail?.city) {
+        // Invalidate all roots for this city
+        Object.keys(cityCache.current).forEach(key => {
+          if (key.startsWith(`${customEvent.detail.city}:`)) delete cityCache.current[key];
+        });
       } else {
         cityCache.current = {};
       }
-      // Optionally refetch if on that city
-      getRouteData(city, root).then(data => {
-        cityCache.current[city] = data;
+      // Optionally refetch if on that city/root
+      getRouteData(city, dbRoot).then(data => {
+        cityCache.current[cacheKey] = data;
         setRouteData(data);
       });
     }
@@ -101,15 +95,17 @@ export default function Home() {
   }, [city, root]);
 
   useEffect(() => {
-    if (cityCache.current[city]) {
-      setRouteData(cityCache.current[city]);
+    const dbRoot = mapRootToDb(root);
+    const cacheKey = `${city}:${dbRoot ?? "all"}`;
+    if (cityCache.current[cacheKey]) {
+      setRouteData(cityCache.current[cacheKey]);
     } else {
-      getRouteData(city, root).then(data => {
-        cityCache.current[city] = data;
+      getRouteData(city, dbRoot).then(data => {
+        cityCache.current[cacheKey] = data;
         setRouteData(data);
       });
     }
-  }, [city]);
+  }, [city, root]);
 
   useEffect(() => {
     if (navigator.geolocation) {

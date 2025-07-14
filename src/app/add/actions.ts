@@ -17,7 +17,8 @@ export async function addPlace(place: {
   displayName?: string;
   osmId?: string;
 }) {
-  const insertObj: any = {
+  // Compose the insert object
+  const insertObj: Record<string, unknown> = {
     name: place.name,
     city: place.city === "San Francisco" ? "sf" : "hcmc",
     type: place.type || "classic",
@@ -38,7 +39,6 @@ export async function addPlace(place: {
   const newPlace = Array.isArray(data) ? data[0] : data;
   // Insert into user_notes if user and notes are present
   if (place.added_by && newPlace && newPlace.id && place.notes) {
-    console.log(place.added_by, newPlace.id, place.notes, "notes err");
     const { error: notesError } = await supabase.from("user_notes").insert([
       {
         user_id: place.added_by,

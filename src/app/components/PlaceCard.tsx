@@ -1,6 +1,23 @@
-import supabase from '../../supabaseClient';
+import Image from 'next/image';
 
-export default function PlaceCard({ data, distance }: { data: any; distance?: number }) {
+// Define type Place if not already defined
+interface Place {
+  name: string;
+  city: string;
+  type: string;
+  address: string;
+  image_path: string;
+  price: number;
+  lat?: number;
+  long?: number;
+  displayName?: string;
+  osmId?: string;
+  notes: string;
+  added_by: string;
+  description: string;
+}
+
+export default function PlaceCard({ data, distance }: { data: Place; distance?: number }) {
 
   console.log(data, 'data')
 
@@ -8,9 +25,11 @@ export default function PlaceCard({ data, distance }: { data: any; distance?: nu
     <div className="max-w-[220px] w-full">
       <div className="relative w-48">
         {data.image_path ? (
-          <img
+          <Image
             src={data.image_path}
             alt={data.name || data.displayName || 'Preview'}
+            width={192}
+            height={192}
             className="aspect-square object-cover rounded-2xl w-48 h-48 bg-zinc-200"
           />
         ) : (

@@ -1,13 +1,11 @@
 import {
   bigint,
   pgTable,
-  serial,
   text,
   timestamp,
   smallint,
   doublePrecision,
   integer,
-  foreignKey,
 } from "drizzle-orm/pg-core";
 
 // Import auth schema

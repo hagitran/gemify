@@ -17,7 +17,7 @@ export default function LoginPage() {
         setError(null);
 
         try {
-            const { data, error } = await authClient.signIn.social({
+            const { error } = await authClient.signIn.social({
                 provider: "google"
             });
 
@@ -38,55 +38,55 @@ export default function LoginPage() {
         }
     }
 
-    async function sendOTP(e: React.FormEvent) {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
+    // async function sendOTP(e: React.FormEvent) {
+    //     e.preventDefault();
+    //     setLoading(true);
+    //     setError(null);
 
-        const { data, error } = await authClient.emailOtp.sendVerificationOtp({
-            email,
-            type: "sign-in"
-        }, {
-            onRequest: () => {
-                setLoading(true);
-            },
-            onSuccess: () => {
-                setOtpSent(true);
-                setLoading(false);
-            },
-            onError: (ctx) => {
-                setError(ctx.error.message);
-                setLoading(false);
-            },
-        });
-    }
+    //     const { data, error } = await authClient.emailOtp.sendVerificationOtp({
+    //         email,
+    //         type: "sign-in"
+    //     }, {
+    //         onRequest: () => {
+    //             setLoading(true);
+    //         },
+    //         onSuccess: () => {
+    //             setOtpSent(true);
+    //             setLoading(false);
+    //         },
+    //         onError: (ctx) => {
+    //             setError(ctx.error.message);
+    //             setLoading(false);
+    //         },
+    //     });
+    // }
 
-    async function verifyOTP(e: React.FormEvent) {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
+    // async function verifyOTP(e: React.FormEvent) {
+    //     e.preventDefault();
+    //     setLoading(true);
+    //     setError(null);
 
-        const { data, error } = await authClient.signIn.emailOtp({
-            email,
-            otp,
-        }, {
-            onRequest: () => {
-                setLoading(true);
-            },
-            onSuccess: () => {
-                setSuccess(true);
-                setLoading(false);
-                // Redirect to home page after successful authentication
-                setTimeout(() => {
-                    router.push("/");
-                }, 1500);
-            },
-            onError: (ctx) => {
-                setError(ctx.error.message);
-                setLoading(false);
-            },
-        });
-    }
+    //     const { data, error } = await authClient.signIn.emailOtp({
+    //         email,
+    //         otp,
+    //     }, {
+    //         onRequest: () => {
+    //             setLoading(true);
+    //         },
+    //         onSuccess: () => {
+    //             setSuccess(true);
+    //             setLoading(false);
+    //             // Redirect to home page after successful authentication
+    //             setTimeout(() => {
+    //                 router.push("/");
+    //             }, 1500);
+    //         },
+    //         onError: (ctx) => {
+    //             setError(ctx.error.message);
+    //             setLoading(false);
+    //         },
+    //     });
+    // }
 
     function resetForm() {
         setEmail("");
@@ -145,7 +145,7 @@ export default function LoginPage() {
                     </>
                 )}
 
-                {!otpSent ? (
+                {/* {!otpSent ? (
                     <form onSubmit={sendOTP} className="space-y-4">
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
@@ -219,7 +219,7 @@ export default function LoginPage() {
                             Use different email
                         </button>
                     </form>
-                )}
+                )} */}
             </div>
         </div>
     );

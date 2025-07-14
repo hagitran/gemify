@@ -1,10 +1,8 @@
 "use client";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 import { addPlace } from "./actions";
-import Link from "next/link";
 import PlaceCard from "../components/PlaceCard";
 import { createClient } from '@supabase/supabase-js';
-import { usePathname } from 'next/navigation';
 
 interface GeocodeResult {
     features: Array<{
@@ -56,7 +54,6 @@ export default function AddPlacePage() {
     const [result, setResult] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState<GeocodeResult['features']>([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -99,13 +96,11 @@ export default function AddPlacePage() {
         setError(null);
 
         try {
-            setSelectedFile(file);
             const filePath = `uploads/${Date.now()}_${file.name}`;
             const { data, error } = await supabase.storage.from('images').upload(filePath, file);
 
             if (error) {
                 setError(error.message);
-                setSelectedFile(null);
             } else {
                 // Get public URL
                 const { data: urlData } = supabase.storage.from('images').getPublicUrl(filePath);
@@ -116,7 +111,6 @@ export default function AddPlacePage() {
             }
         } catch (error) {
             setError('Failed to upload image. Please try again.');
-            setSelectedFile(null);
         } finally {
             setImageUploading(false);
         }

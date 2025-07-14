@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { UserDropdown } from "./UserDropdown";
 import { QuerySelector } from "./QuerySelector";
 import { authClient } from "../lib/auth-client";
@@ -53,7 +52,7 @@ export function Topbar() {
                         className="px-4 py-2 text-sm text-zinc-700 hover:text-emerald-600 transition-colors"
                     >
                         Share a gem
-                        <div className="text-xs text-zinc-400">It's fast I promise</div>
+                        <div className="text-xs text-zinc-400">It&apos;s fast I promise</div>
                     </Link>
                     {/* User Profile */}
                     <div className="flex items-center gap-4">

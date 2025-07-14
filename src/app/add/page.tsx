@@ -392,10 +392,10 @@ export default function AddPlacePage() {
                                         className="p-2 border border-zinc-300 w-full rounded-lg focus:outline-none focus:ring-2 text-md"
                                     >
                                         <option value="">Select a type</option>
-                                        <option value="classic">Classic</option>
-                                        <option value="foodie">Foodie</option>
-                                        <option value="cafe">Scenic</option>
-                                        <option value="park">Experiences</option>
+                                        <option value="food">Food</option>
+                                        <option value="cafe">Cafe</option>
+                                        <option value="experience">Experience</option>
+                                        <option value="other">Other</option>
                                     </select>
                                 </div>
                                 <div className="flex flex-col">

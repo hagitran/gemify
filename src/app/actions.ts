@@ -3,7 +3,11 @@
 import supabase from "../supabaseClient";
 
 export async function getRouteData(city: string, root: string | null) {
-  let query = supabase.from("places").select("*").eq("city", city);
+  let query = supabase
+    .from("places")
+    .select("*")
+    .eq("city", city)
+    .order("karma", { ascending: false });
   if (root) {
     query = query.eq("type", root.toLowerCase());
   }

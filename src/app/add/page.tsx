@@ -27,6 +27,7 @@ interface PlaceData {
     notes: string;
     added_by: string;
     description: string;
+    ambiance?: string;
 }
 
 // Add Nominatim types
@@ -92,6 +93,7 @@ export default function AddPlacePage() {
         notes: "",
         added_by: "anon",
         description: "",
+        ambiance: "",
     });
 
     const [result, setResult] = useState<AddPlaceResult | null>(null);
@@ -120,7 +122,8 @@ export default function AddPlacePage() {
         setLoading(true);
         const res: AddPlaceResult = await addPlace({
             ...placeData,
-            added_by: session?.user?.id || "anon"
+            added_by: session?.user?.id || "anon",
+            ambiance: placeData.ambiance,
         });
         setLoading(false);
         if (res && !Array.isArray(res) && 'error' in res && res.error) {
@@ -138,6 +141,7 @@ export default function AddPlacePage() {
                 notes: "",
                 description: "",
                 added_by: "anon",
+                ambiance: "",
             });
             setSearchQuery("");
             setSelectedPlace(null);
@@ -279,7 +283,7 @@ export default function AddPlacePage() {
                     </div>
                 </div>
                 {/* Form Side */}
-                <div className="w-full md:flex-1 flex-col bg-white h-full p-4 md:p-8">
+                <div className="w-full md:flex-1 flex-col bg-white h-full p-4 md:py-2">
                     {/* Tab Bar (only on form side) */}
                     <div className="flex flex-row w-full mb-2 border-b border-zinc-200">
                         <button
@@ -296,7 +300,7 @@ export default function AddPlacePage() {
                         </button>
                     </div>
                     <h1 className="text-2xl font-medium py-6">Share a gem</h1>
-                    <form onSubmit={handleAdd} className="flex flex-col gap-12 w-full">
+                    <form onSubmit={handleAdd} className="flex flex-col gap-6 w-full">
                         {/* Geocode search */}
                         <div className="flex flex-col w-full relative">
                             <label htmlFor="geocode-search" className="block text-sm font-medium text-gray-700">
@@ -305,7 +309,7 @@ export default function AddPlacePage() {
                             <input
                                 id="geocode-search"
                                 type="text"
-                                placeholder="Search for a place's name and we'll autofill the details."
+                                placeholder="Search for a place&apos;s name and we&apos;ll autofill the details."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="p-2 border border-zinc-300 w-full rounded-lg focus:outline-none focus:ring-2 text-md underline underline-offset-2 decoration-emerald-600"
@@ -327,7 +331,7 @@ export default function AddPlacePage() {
                                     ))}
                                 </div>
                             )}
-                            {isSearching && (
+                            {(isSearching && !selectedPlace) && (
                                 <div className="absolute top-full left-0 right-0 bg-white border border-zinc-200 rounded-xl mt-2 p-4 text-center text-zinc-500 shadow-lg">
                                     <div className="flex items-center justify-center gap-2">
                                         <div className="animate-spin rounded-full h-4 w-4 border-b-2"></div>
@@ -364,6 +368,7 @@ export default function AddPlacePage() {
                                     ) : placeData.image_path ? (
                                         <Image
                                             src={placeData.image_path}
+                                            fill
                                             alt="Preview"
                                             className="w-64 h-64 object-cover rounded-2xl"
                                         />
@@ -396,6 +401,7 @@ export default function AddPlacePage() {
                                         value={placeData.name}
                                         onChange={(e) => setPlaceData(prev => ({ ...prev, name: e.target.value }))}
                                         className="p-2 border border-zinc-300 w-full rounded-lg focus:outline-none focus:ring-2 text-md"
+                                        required
                                     />
                                 </div>
                                 <div className="flex flex-col">
@@ -405,12 +411,31 @@ export default function AddPlacePage() {
                                         value={placeData.type}
                                         onChange={(e) => setPlaceData(prev => ({ ...prev, type: e.target.value }))}
                                         className="p-2 border border-zinc-300 w-full rounded-lg focus:outline-none focus:ring-2 text-md"
+                                        required
                                     >
-                                        <option value="">Select a type</option>
+                                        <option value="">Is it a cafe, restaurant or experience?</option>
                                         <option value="food">Food</option>
                                         <option value="cafe">Cafe</option>
                                         <option value="experience">Experience</option>
                                         <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                <div className="flex flex-col">
+                                    <label htmlFor="place-ambiance" className="block text-sm font-medium text-gray-700 mb-1">Ambiance</label>
+                                    <select
+                                        id="place-ambiance"
+                                        value={placeData.ambiance}
+                                        onChange={(e) => setPlaceData(prev => ({ ...prev, ambiance: e.target.value }))}
+                                        className="p-2 border border-zinc-300 w-full rounded-lg focus:outline-none focus:ring-2 text-md"
+                                        required
+                                    >
+                                        <option value="">What&apos;s the ambiance like?</option>
+                                        <option value="cozy">Cozy</option>
+                                        <option value="lively">Lively</option>
+                                        <option value="work-friendly">Work-Friendly</option>
+                                        <option value="trendy">Trendy</option>
+                                        <option value="traditional">Traditional</option>
+                                        <option value="romantic">Romantic</option>
                                     </select>
                                 </div>
                                 <div className="flex flex-col">
@@ -422,6 +447,7 @@ export default function AddPlacePage() {
                                         value={placeData.address}
                                         onChange={(e) => setPlaceData(prev => ({ ...prev, address: e.target.value }))}
                                         className="p-2 border border-zinc-300 w-full rounded-lg focus:outline-none focus:ring-2 text-md"
+                                        required
                                     />
                                 </div>
                                 <div className="flex flex-row gap-8">
@@ -444,7 +470,7 @@ export default function AddPlacePage() {
                                     </div>
 
                                     <div className="flex flex-col w-full">
-                                        <label htmlFor="place-notes" className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                                        <label htmlFor="place-notes" className="block text-sm font-medium text-gray-700 mb-1">{(placeData.type == 'experience') ? "What would you do here?" : "What's your go to here?"}</label>
                                         <textarea
                                             id="place-notes"
                                             placeholder="What would you do here? "
@@ -452,6 +478,7 @@ export default function AddPlacePage() {
                                             onChange={(e) => setPlaceData(prev => ({ ...prev, notes: e.target.value }))}
                                             rows={2}
                                             className="p-2 border border-zinc-300 w-full rounded-lg focus:outline-none focus:ring-2 text-md resize-none"
+                                            required
                                         />
                                     </div>
                                 </div>

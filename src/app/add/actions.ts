@@ -16,6 +16,7 @@ export async function addPlace(place: {
   long?: number;
   displayName?: string;
   osmId?: string;
+  ambiance?: string;
 }) {
   // Compose the insert object
   const insertObj: Record<string, unknown> = {
@@ -29,6 +30,7 @@ export async function addPlace(place: {
     image_path: place.image_path || null,
     price: place.price ?? 0,
     added_by: place.added_by || "anon",
+    ambiance: place.ambiance || null,
     // description is not in DB, but you may want to add it if you add a column
   };
   const { data, error } = await supabase

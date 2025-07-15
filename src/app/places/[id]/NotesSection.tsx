@@ -1,7 +1,10 @@
 "use client";
 import NoteForm from "./NoteForm";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { authClient } from "../../lib/auth-client";
+import { addUserReview } from "../actions";
+import supabase from "@/supabaseClient";
 
 interface Note {
     id: number;
@@ -13,16 +16,49 @@ interface Note {
 interface NotesSectionProps {
     notes: Note[];
     handleAddNote: (formData: FormData) => void;
-    place: { address?: string; display_name?: string };
+    place: { id: number; address?: string; display_name?: string };
 }
 
 export default function NotesSection({ notes, handleAddNote, place }: NotesSectionProps) {
     const [showAddress, setShowAddress] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [userReview, setUserReview] = useState<{ id: number } | null>(null);
+    const [discarding, setDiscarding] = useState(false);
 
+    const { data: session } = authClient.useSession();
     const addExperienceBtnRef = useRef<HTMLButtonElement>(null);
     const imageUploadRef = useRef<HTMLLabelElement>(null);
     const addressDivRef = useRef<HTMLDivElement>(null);
+
+    const fetchUserReview = useCallback(async () => {
+        if (session?.user?.id && place?.id) {
+            const { data, error } = await supabase
+                .from("user_reviews")
+                .select("id")
+                .eq("user_id", session.user.id)
+                .eq("place_id", place.id)
+                .maybeSingle();
+            if (data && !error) setUserReview(data);
+            else setUserReview(null);
+        }
+    }, [session?.user?.id, place?.id]);
+
+    useEffect(() => {
+        fetchUserReview();
+    }, [fetchUserReview]);
+
+    async function handleDiscardReview() {
+        if (!userReview) return;
+        setDiscarding(true);
+        const { error } = await supabase
+            .from("user_reviews")
+            .delete()
+            .eq("id", userReview.id);
+        console.log(error)
+        setDiscarding(false);
+        await fetchUserReview(); // Refetch after discard
+        // Optionally show a toast or error
+    }
 
     const handleAddExperience = () => {
         addExperienceBtnRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -33,11 +69,18 @@ export default function NotesSection({ notes, handleAddNote, place }: NotesSecti
         setShowAddress((prev) => !prev);
         if (!showAddress) {
             const address = place.display_name || place.address || "";
-            console.log(address, 'address')
             if (address) {
                 await navigator.clipboard.writeText(address);
                 setCopied(true);
                 setTimeout(() => setCopied(false), 1500);
+            }
+            // Add user review record
+            if (session?.user?.id && place?.id) {
+                await addUserReview({
+                    user_id: session.user.id,
+                    place_id: place.id,
+                });
+                await fetchUserReview(); // Refetch after add
             }
         }
     };
@@ -46,23 +89,43 @@ export default function NotesSection({ notes, handleAddNote, place }: NotesSecti
 
     return (
         <div className="flex flex-col gap-y-4 sm:gap-y-2">
-            <div className="flex justify-end w-full gap-2">
+            <div className="flex justify-end w-full gap-4">
                 <button
                     ref={addExperienceBtnRef}
                     type="button"
-                    className="px-4 py-2 text-md text-zinc-700 hover:text-emerald-600 transition-colors text-right cursor-pointer"
+                    className="text-md text-zinc-700 hover:text-emerald-600 transition-colors text-right cursor-pointer"
                     onClick={handleAddExperience}
                 >
-                    Add experience
-                    <div className="text-sm text-zinc-400">Been here already?</div>
+                    Comment
+                    <div className="text-sm text-zinc-400">Have thoughts?</div>
                 </button>
-                <div
-                    className="px-4 py-2 text-md text-zinc-700 hover:text-emerald-600 transition-colors text-right cursor-pointer"
-                    onClick={handleTryNow}
-                >
-                    Try now
-                    <div className="text-sm text-zinc-400">View address</div>
-                </div>
+                {userReview ? (
+                    <div className="flex gap-4 items-center">
+                        <Link
+                            href={`/profiles/${session?.user?.name || session?.user?.id}`}
+                            className="px-4 py-2 text-md text-zinc-700 hover:text-emerald-600 transition-colors text-right cursor-pointer flex flex-col"
+                        >
+                            Review Now
+                            <div className="text-sm text-zinc-400">Been here yet?</div>
+                        </Link>
+                        <button
+                            className="px-3 py-2 text-md text-red-600 border border-red-200 rounded hover:bg-red-50 transition-colors text-right cursor-pointer disabled:opacity-50 flex items-center gap-2"
+                            onClick={handleDiscardReview}
+                            disabled={discarding}
+                        >
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                            {discarding ? 'Discarding...' : 'Discard'}
+                        </button>
+                    </div>
+                ) : (
+                    <div
+                        className="px-4 py-2 text-md text-zinc-700 hover:text-emerald-600 transition-colors text-right cursor-pointer"
+                        onClick={handleTryNow}
+                    >
+                        Try now
+                        <div className="text-sm text-zinc-400">View address</div>
+                    </div>
+                )}
             </div>
             {showAddress && (
                 <div ref={addressDivRef} className="p-3 bg-zinc-100 rounded text-zinc-700 text-sm flex items-center gap-4 relative">

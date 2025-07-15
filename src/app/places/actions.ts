@@ -36,3 +36,24 @@ export async function addNote({
   if (error) return { error };
   return data;
 }
+
+export async function addUserReview({
+  user_id,
+  place_id,
+}: {
+  user_id: string;
+  place_id: number;
+}) {
+  const { data, error } = await supabase.from("user_reviews").insert([
+    {
+      user_id,
+      place_id,
+      tried: false,
+      recommended_item: null,
+      price: null,
+      ambiance: null,
+    },
+  ]);
+  if (error) return { error };
+  return data;
+}

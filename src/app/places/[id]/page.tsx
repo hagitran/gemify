@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import supabase from "@/supabaseClient";
 import Link from "next/link";
-import { addNote } from "./actions";
+import { addNote } from "../actions";
 import NotesSection from "./NotesSection";
 import { revalidatePath } from "next/cache";
 

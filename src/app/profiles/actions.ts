@@ -18,3 +18,19 @@ export async function getUserNotes(userId: string) {
   if (error) throw error;
   return data;
 }
+
+export async function getUserReviews(userId: string) {
+  const { data, error } = await supabase
+    .from("user_reviews")
+    .select(
+      `
+      *,
+      place:place_id (
+        id, name, city, type, image_path, price, lat, long, display_name, osm_id, added_by, ambiance
+      )
+    `
+    )
+    .eq("user_id", userId);
+  if (error) throw error;
+  return data;
+}

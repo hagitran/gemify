@@ -15,7 +15,7 @@ export * from "../../auth-schema";
 
 export const placesTable = pgTable("places", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  name: text("name"),
+  name: text("name").unique(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -30,7 +30,6 @@ export const placesTable = pgTable("places", {
   imagePath: text("image_path"),
   price: smallint("price").default(0),
   addedBy: text("added_by").references(() => user.id),
-  notes: text("notes"),
 });
 
 export const userNotesTable = pgTable("user_notes", {

@@ -25,6 +25,7 @@ const supabase = createClient(
 );
 
 interface PlaceData {
+    id: string;
     name: string;
     city: string;
     type: string;
@@ -92,9 +93,12 @@ type GeocodeFeature = NominatimFeature | PhotonFeature;
 
 type AddPlaceResult = PlaceData[] | { error: unknown };
 
+const MAX_RECENT_QUERIES = 5;
+
 export default function AddPlacePage() {
     const { data: session } = authClient.useSession();
     const [placeData, setPlaceData] = useState<PlaceData>({
+        id: "",
         name: "",
         city: "",
         type: "",
@@ -110,10 +114,20 @@ export default function AddPlacePage() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
-    const [searchResults, setSearchResults] = useState<GeocodeFeature[]>([]);
+    const [searchResults, setSearchResults] = useState<NominatimFeature[]>([]);
     const [isSearching, setIsSearching] = useState(false);
-    const [selectedPlace, setSelectedPlace] = useState<GeocodeFeature | null>(null);
+    const [selectedPlace, setSelectedPlace] = useState<NominatimFeature | null>(null);
     const [imageUploading, setImageUploading] = useState(false);
+    const [recentQueries, setRecentQueries] = useState<string[]>([]);
+    const [inputFocused, setInputFocused] = useState(false);
+
+    // Add to recent queries
+    function addRecentQuery(query: string) {
+        setRecentQueries(prev => {
+            const filtered = prev.filter(q => q !== query);
+            return [query, ...filtered].slice(0, MAX_RECENT_QUERIES);
+        });
+    }
 
     async function handleAdd(e: React.FormEvent) {
         e.preventDefault();
@@ -130,6 +144,7 @@ export default function AddPlacePage() {
         } else {
             setResult(res);
             setPlaceData({
+                id: "",
                 name: "",
                 city: "",
                 type: "",
@@ -140,6 +155,9 @@ export default function AddPlacePage() {
                 description: "",
                 added_by: "anon",
             });
+            setSearchQuery("");
+            setSelectedPlace(null);
+            setSearchResults([]);
             // Invalidate city cache in Home page
             const cityValue = placeData.city === "San Francisco" ? "sf" : "hcmc";
             window.dispatchEvent(new CustomEvent('invalidateCityCache', { detail: { city: cityValue } }));
@@ -180,78 +198,46 @@ export default function AddPlacePage() {
             setSearchResults([]);
             return;
         }
-
         setIsSearching(true);
+        addRecentQuery(query);
+        // Only use Nominatim
+        const lat = 10.8035553;
+        const lon = 106.6976776;
+        const limit = 5;
+        const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=geojson&q=${encodeURIComponent(query)}&limit=${limit}`;
+
         try {
-            const lat = 10.8035553;
-            const lon = 106.6976776;
-            const limit = 5;
-            // Photon API
-            const photonUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&lat=${lat}&lon=${lon}&limit=${limit}`;
-            // Nominatim API
-            const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=geojson&q=${encodeURIComponent(query)}&limit=${limit}`;
-
-            // Fetch both in parallel
-            const [photonRes, nominatimRes] = await Promise.all([
-                fetch(photonUrl),
-                fetch(nominatimUrl)
-            ]);
-
-            if (!photonRes.ok && !nominatimRes.ok) {
-                throw new Error('Failed to fetch places');
-            }
-
-            const photonData: { features: PhotonFeature[] } = photonRes.ok ? await photonRes.json() : { features: [] };
-            const nominatimData: { features: NominatimFeature[] } = nominatimRes.ok ? await nominatimRes.json() : { features: [] };
-
-            // Normalize Nominatim results to match Photon structure
-            const nominatimFeatures: NominatimFeature[] = (nominatimData.features || []).map((f) => ({
+            const res = await fetch(nominatimUrl);
+            if (!res.ok) throw new Error('Failed to fetch places');
+            const data: { features: NominatimFeature[] } = await res.json();
+            const nominatimResults: NominatimFeature[] = (data.features || []).map((f) => ({
                 ...f,
                 properties: {
                     ...f.properties,
                     label: f.properties.display_name,
                     name: f.properties.display_name?.split(",")[0] || f.properties.display_name,
-                    source: "nominatim"
+                    source: "nominatim" as const
                 }
             }));
-
-            const photonFeatures: PhotonFeature[] = (photonData.features || []).map((f) => ({
-                ...f,
-                properties: {
-                    ...f.properties,
-                    source: "photon"
-                }
-            }));
-
-            setSearchResults([...nominatimFeatures, ...photonFeatures]);
+            setSearchResults(nominatimResults);
         } catch (error) {
-            console.error('Error searching places:', error);
-            setError('Failed to search places');
+            setSearchResults([]);
         } finally {
             setIsSearching(false);
         }
     }
 
-    function handlePlaceSelect(place: GeocodeFeature) {
-        const isNominatim = place.properties.source === "nominatim";
+    function handlePlaceSelect(place: NominatimFeature) {
         const [long, lat] = place.geometry.coordinates;
         setSelectedPlace(place);
         setPlaceData(prev => ({
             ...prev,
             name: place.properties.name || prev.name,
-            address: isNominatim
-                ? (place.properties as NominatimProperties).display_name || prev.address
-                : (place.properties as PhotonProperties).street ? String((place.properties as PhotonProperties).street) : prev.address,
-            city: isNominatim
-                ? ((place.properties as NominatimProperties).display_name?.split(",").slice(-4, -3)[0]?.trim() || prev.city)
-                : (place.properties as PhotonProperties).locality ? String((place.properties as PhotonProperties).locality) : prev.city,
+            address: (place.properties as NominatimProperties).display_name || prev.address,
+            city: ((place.properties as NominatimProperties).display_name?.split(",").slice(-4, -3)[0]?.trim() || prev.city),
             displayName: place.properties.label || prev.displayName,
-            osmId: isNominatim
-                ? ((place.properties as NominatimProperties).osm_id !== undefined ? String((place.properties as NominatimProperties).osm_id) : prev.osmId)
-                : ((place.properties as PhotonProperties).id !== undefined ? String((place.properties as PhotonProperties).id) : prev.osmId),
-            type: isNominatim
-                ? (place.properties as NominatimProperties).type || (place.properties as NominatimProperties).category || prev.type
-                : prev.type,
+            osmId: String((place.properties as NominatimProperties).osm_id),
+            type: (place.properties as NominatimProperties).type || (place.properties as NominatimProperties).category || prev.type,
             lat: lat ?? prev.lat,
             long: long ?? prev.long,
         }));
@@ -326,8 +312,25 @@ export default function AddPlacePage() {
                                 placeholder="Search for a place's name and we'll autofill the details."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="p-2 border border-zinc-300 w-full rounded-lg focus:outline-none focus:ring-2 text-md"
+                                className="p-2 border border-zinc-300 w-full rounded-lg focus:outline-none focus:ring-2 text-md underline underline-offset-2 decoration-emerald-600"
+                                autoComplete="off"
+                                onFocus={() => setInputFocused(true)}
+                                onBlur={() => setTimeout(() => setInputFocused(false), 100)}
                             />
+                            {/* Recent queries dropdown */}
+                            {recentQueries.length > 0 && !searchQuery && (
+                                <div className="absolute mt-12 bg-white border border-zinc-200 rounded-lg max-h-48 overflow-y-auto z-10 shadow-lg">
+                                    {recentQueries.map((q, idx) => (
+                                        <button
+                                            key={q}
+                                            onClick={() => setSearchQuery(q)}
+                                            className="w-full text-left p-4 cursor-pointer hover:bg-zinc-50 border-b border-zinc-100 last:border-b-0 transition-colors duration-150"
+                                        >
+                                            <span className="font-semibold text-zinc-900">{q}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                             {isSearching && (
                                 <div className="absolute top-full left-0 right-0 bg-white border border-zinc-200 rounded-xl mt-2 p-4 text-center text-zinc-500 shadow-lg">
                                     <div className="flex items-center justify-center gap-2">
@@ -336,7 +339,7 @@ export default function AddPlacePage() {
                                     </div>
                                 </div>
                             )}
-                            {(searchResults.length > 0 && !selectedPlace) && (
+                            {(searchResults.length > 0 && !selectedPlace && inputFocused) && (
                                 <div className="absolute mt-12 bg-white border border-zinc-200 rounded-lg max-h-48 overflow-y-auto z-10 shadow-lg">
                                     {searchResults.map((place, index) => (
                                         <button
@@ -346,7 +349,7 @@ export default function AddPlacePage() {
                                         >
                                             <div className="font-semibold text-zinc-900">{place.properties.name}</div>
                                             <div className="text-sm text-zinc-500 mt-1">{place.properties.label}</div>
-                                            <div className="text-xs text-emerald-500 mt-1">{place.properties.source === "photon" ? "Photon" : "Nominatim"}</div>
+                                            <div className="text-xs text-emerald-500 mt-1">Nominatim</div>
                                         </button>
                                     ))}
                                 </div>
@@ -462,8 +465,9 @@ export default function AddPlacePage() {
                         <button type="submit" className="bg-emerald-600 cursor-pointer text-white px-4 py-2 rounded hover:bg-emerald-700 transition-colors font-medium mt-4" disabled={loading || imageUploading}>
                             {loading ? "Adding..." : imageUploading ? "Uploading image..." : "Add Place"}
                         </button>
-                        {/* {result && <span className="text-green-600">Added!</span>} */}
-                        {error && <span className="text-red-600">{error}</span>}
+                        {error && (
+                            <span className="text-red-600 block mt-2">{error}</span>
+                        )}
                     </form>
                 </div>
             </div>

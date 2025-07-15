@@ -29,7 +29,7 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 interface Place {
-  id?: string;
+  id: string;
   name: string;
   city: string;
   type: string;

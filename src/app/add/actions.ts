@@ -22,13 +22,12 @@ export async function addPlace(place: {
     name: place.name,
     city: place.city === "San Francisco" ? "sf" : "hcmc",
     type: place.type || "classic",
-    display_name: place.displayName || null,
+    display_name: place.displayName || place.address,
     osm_id: place.osmId || null,
     lat: place.lat ?? null,
     long: place.long ?? null,
     image_path: place.image_path || null,
     price: place.price ?? 0,
-    notes: place.notes || null,
     added_by: place.added_by || "anon",
     // description is not in DB, but you may want to add it if you add a column
   };
@@ -36,7 +35,12 @@ export async function addPlace(place: {
     .from("places")
     .insert([insertObj])
     .select();
-  if (error) return { error };
+  if (error) {
+    if (error.code === "23505") {
+      return { error: "A place with this name and city already exists." };
+    }
+    return { error };
+  }
   const newPlace = Array.isArray(data) ? data[0] : data;
   // Insert into user_notes if user and notes are present
   if (place.added_by && newPlace && newPlace.id && place.notes) {

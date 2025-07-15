@@ -71,6 +71,27 @@
       "when": 1752422079560,
       "tag": "0009_public_wild_child",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1752560574481,
+      "tag": "0010_productive_bulldozer",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1752562992606,
+      "tag": "0011_known_squadron_supreme",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1752563529570,
+      "tag": "0012_ancient_morbius",
+      "breakpoints": true
     }
   ]
 }

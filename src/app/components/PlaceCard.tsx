@@ -1,7 +1,9 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
 // Define type Place if not already defined
 interface Place {
+  id: string;
   name: string;
   city: string;
   type: string;
@@ -19,8 +21,10 @@ interface Place {
 
 export default function PlaceCard({ data, distance }: { data: Place; distance?: number }) {
 
+  console.log(data, 'data')
+
   return (
-    <div className="max-w-[220px] w-full">
+    <Link href={`/places/${data.id}`} className="max-w-[220px] w-full">
       <div className="relative w-48">
         {data.image_path ? (
           <Image
@@ -57,6 +61,6 @@ export default function PlaceCard({ data, distance }: { data: Place; distance?: 
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

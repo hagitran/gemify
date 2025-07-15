@@ -6,10 +6,6 @@ import { addNote } from "./actions";
 import NotesSection from "./NotesSection";
 import { revalidatePath } from "next/cache";
 
-interface PlacePageProps {
-    params: { id: string };
-}
-
 interface Note {
     id: number;
     note: string;
@@ -27,7 +23,7 @@ interface Place {
     price: number;
     lat?: number;
     long?: number;
-    displayName?: string;
+    display_name?: string;
     osmId?: string;
     notes: string;
     added_by: string;
@@ -53,9 +49,8 @@ export async function generateStaticParams() {
     if (error || !data) return [];
     return data.map((place: { id: number }) => ({ id: place.id.toString() }));
 }
-
-
-export default async function PlacePage({ params }: PlacePageProps) {
+type Params = Promise<{ id: string }>;
+export default async function PlacePage({ params }: { params: Params }) {
     const { id } = await params;
     const idNum = Number(id);
     if (isNaN(idNum)) return notFound();
@@ -63,7 +58,7 @@ export default async function PlacePage({ params }: PlacePageProps) {
     let place: Place | null = null;
     let notes: Note[] = [];
     try {
-        // Use force-cache to statically generate data at build time
+
         const { data: placeData } = await supabase
             .from("places")
             .select("*, user:added_by(name)")
@@ -101,7 +96,7 @@ export default async function PlacePage({ params }: PlacePageProps) {
                 {place.image_path ? (
                     <Image
                         src={place.image_path}
-                        alt={place.name || place.displayName || 'Preview'}
+                        alt={place.name || place.display_name || 'Preview'}
                         fill
                         className="object-cover w-full h-full"
                         priority
@@ -144,7 +139,7 @@ export default async function PlacePage({ params }: PlacePageProps) {
                         </span>
                     </div>
                 </div>
-                <NotesSection notes={notes} handleAddNote={handleAddNote} />
+                <NotesSection notes={notes} place={place} handleAddNote={handleAddNote} />
             </div>
         </div>
     );

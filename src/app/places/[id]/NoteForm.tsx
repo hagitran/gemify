@@ -2,7 +2,7 @@
 import { useRef, useState, RefObject, FormEvent } from "react";
 import { authClient } from "../../lib/auth-client";
 
-export default function NoteForm({ onSubmit, className = "", textareaRef }: { onSubmit: (formData: FormData) => void, className?: string, textareaRef?: RefObject<HTMLTextAreaElement> }) {
+export default function NoteForm({ onSubmit, className = "", textareaRef, imageUploadRef }: { onSubmit: (formData: FormData) => void, className?: string, textareaRef?: RefObject<HTMLTextAreaElement>, imageUploadRef?: RefObject<HTMLLabelElement> }) {
     const { data: session } = authClient.useSession();
     const internalRef = useRef<HTMLTextAreaElement>(null);
     const ref = textareaRef || internalRef;
@@ -44,7 +44,10 @@ export default function NoteForm({ onSubmit, className = "", textareaRef }: { on
                 />
                 {focused && (
                     <div className="flex items-center gap-2 mt-2 absolute left-0">
-                        <label className="cursor-pointer text-black hover:text-emerald-600 text-sm font-medium">
+                        <label
+                            ref={imageUploadRef}
+                            className="cursor-pointer text-black hover:text-emerald-600 text-sm font-medium"
+                        >
                             <input
                                 type="file"
                                 name="image"

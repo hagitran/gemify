@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { addPlace } from "./actions";
 import PlaceCard from "../components/PlaceCard";
 import { createClient } from '@supabase/supabase-js';
@@ -70,6 +70,14 @@ const getCookie = (name: string) => {
     if (parts.length === 2) return parts.pop()?.split(';').shift();
     return null;
 };
+
+interface SessionUser {
+    id: string;
+    name: string;
+    email: string;
+    preferredCity?: string;
+    // ...other fields as needed
+}
 
 export default function AddPlacePage() {
     const { data: session } = authClient.useSession();
@@ -169,7 +177,7 @@ export default function AddPlacePage() {
         }
     }
 
-    async function searchPlaces(query: string) {
+    const searchPlaces = useCallback(async (query: string) => {
         if (!query.trim()) {
             setSearchResults([]);
             return;
@@ -184,8 +192,9 @@ export default function AddPlacePage() {
         };
         // Get preferred city from session or cookie
         let preferredCity = getCookie('preferredCity') || 'hcmc';
-        if (session?.user && typeof (session.user as any).preferredCity === 'string' && (session.user as any).preferredCity) {
-            preferredCity = (session.user as any).preferredCity;
+        const user = session?.user as SessionUser | undefined;
+        if (user?.preferredCity) {
+            preferredCity = user.preferredCity;
         }
         const coords = cityCoords[preferredCity] || cityCoords['hcmc'];
 
@@ -212,7 +221,7 @@ export default function AddPlacePage() {
         } finally {
             setIsSearching(false);
         }
-    }
+    }, [session, addRecentQuery]);
 
     function handlePlaceSelect(place: NominatimFeature) {
         const [long, lat] = place.geometry.coordinates;
@@ -247,7 +256,7 @@ export default function AddPlacePage() {
             searchPlaces(searchQuery);
         }, 500);
         return () => clearTimeout(handler);
-    }, [searchQuery]);
+    }, [searchQuery, searchPlaces]);
 
     useEffect(() => {
         if (result && !('error' in result)) {

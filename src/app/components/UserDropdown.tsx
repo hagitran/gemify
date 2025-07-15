@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 
 interface UserDropdownProps {
@@ -59,7 +60,7 @@ export function UserDropdown({ userName, userEmail, onSignOut }: UserDropdownPro
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-zinc-200 py-1 z-50">
+                <Link href={`/profiles/${userName}`} className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-zinc-200 py-1 z-50">
                     <button className="w-full text-left px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 transition-colors cursor-pointer">
                         <div className="flex items-center gap-2">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -80,7 +81,7 @@ export function UserDropdown({ userName, userEmail, onSignOut }: UserDropdownPro
                             Sign out
                         </div>
                     </button>
-                </div>
+                </Link>
             )}
         </div>
     );

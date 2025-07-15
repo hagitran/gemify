@@ -67,11 +67,12 @@ export default function LoginPage() {
         e.preventDefault();
         setLoading(true);
         setError(null);
+        const sanitizedName = name.replace(/\s+/g, '');
         try {
             const { error } = await authClient.signUp.email({
                 email,
                 password,
-                name,
+                name: sanitizedName,
                 callbackURL: "/"
             }, {
                 onRequest: () => setLoading(true),

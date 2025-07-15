@@ -90,9 +90,9 @@ export default async function PlacePage({ params }: { params: Params }) {
     }
 
     return (
-        <div className="w-full flex flex-col items-center">
+        <div className="w-full flex flex-col items-center overflow-x-hidden px-0 gap-4 sm:gap-0">
             {/* Hero Section */}
-            <div className="relative w-full max-w-2xl h-[256px] bg-zinc-100 rounded-b-2xl overflow-hidden mb-6">
+            <div className="relative w-full max-w-full sm:max-w-2xl h-72 sm:h-80 bg-zinc-100 rounded-b-lg sm:rounded-b-2xl overflow-hidden mb-4 sm:mb-8">
                 {place.image_path ? (
                     <Image
                         src={place.image_path}
@@ -104,33 +104,33 @@ export default async function PlacePage({ params }: { params: Params }) {
                         unoptimized={false}
                     />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center text-zinc-400 text-4xl bg-zinc-200">
+                    <div className="w-full h-full flex items-center justify-center text-zinc-400 text-3xl sm:text-4xl bg-zinc-200">
                         No Image
                     </div>
                 )}
                 {/* Overlay for name and tags */}
-                <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/70 to-transparent p-6 flex flex-col gap-2">
-                    <div className="flex items-center gap-3">
-                        <h1 className="text-3xl font-bold text-white drop-shadow">{place.name}</h1>
+                <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/70 to-transparent p-4 sm:p-6 flex flex-col gap-3">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+                        <h1 className="text-3xl sm:text-3xl font-bold text-white drop-shadow">{place.name}</h1>
                         {badge && (
-                            <span className={`ml-2 px-3 py-1 rounded-full text-xs font-semibold text-white ${badge.color}`}>{badge.label}</span>
+                            <span className={`ml-0 sm:ml-2 px-4 py-2 rounded-full text-base font-semibold text-white ${badge.color}`}>{badge.label}</span>
                         )}
                     </div>
-                    <div className="flex items-center gap-4 mt-1">
-                        {type && <span className="bg-white/80 text-zinc-800 text-xs font-medium rounded px-2 py-1">{type}</span>}
-                        {price && <span className="bg-white/80 text-zinc-800 text-xs font-medium rounded px-2 py-1">{price}</span>}
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-1">
+                        {type && <span className="bg-white/80 text-zinc-800 text-base font-medium rounded px-3 py-2">{type}</span>}
+                        {price && <span className="bg-white/80 text-zinc-800 text-base font-medium rounded px-3 py-2">{price}</span>}
                     </div>
                 </div>
             </div>
 
-            <div className="flex underline decoration-emerald-600">
+            <div className="flex underline decoration-emerald-600 text-xl sm:text-lg px-4 text-center max-w-xl mb-4">
                 You’ve [user preference] — this place is [contrast], but [hook]. Want to give it a spin?
             </div>
 
             {/* Details Section */}
-            <div className="w-full max-w-2xl p-8">
+            <div className="flex flex-col w-full max-w-full sm:max-w-2xl p-4 sm:p-8 gap-8 sm:gap-0">
                 <div className="flex flex-col">
-                    <div className="mb-8">
+                    <div className="mb-6 sm:mb-8 text-lg sm:text-md">
                         This gem was added by {" "}
                         <Link href={`/profiles/${place.user.name}`} className="underline underline-offset-2 decoration-zinc-600">{place.user.name}</Link>
                         {" "} on {" "}

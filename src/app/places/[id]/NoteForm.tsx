@@ -27,7 +27,7 @@ export default function NoteForm({ onSubmit, className = "", textareaRef, imageU
     }
 
     return (
-        <form onSubmit={handleSubmit} className={`mb-4 flex flex-col gap-2 justify-end mt-4 ${className}`}>
+        <form onSubmit={handleSubmit} className={`flex flex-col gap-4 sm:gap-2 justify-end ${className}`}>
             <div className="relative">
                 <textarea
                     ref={ref}

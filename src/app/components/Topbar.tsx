@@ -24,10 +24,13 @@ export function Topbar() {
     };
 
     return (
-        <header className="sticky top-0 z-50 w-full bg-zinc-50 border-b border-zinc-200 px-4 py-3">
-            <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <header
+            className={`sticky top-0 z-50 w-full bg-zinc-50 border-b border-zinc-200 px-2 sm:px-4 py-3 ${!isRootPage ? 'hidden sm:block' : ''
+                }`}
+        >
+            <div className="max-w-7xl mx-auto flex items-center">
                 {/* Logo */}
-                <Link href="/" className="flex items-center gap-2 cursor-pointer">
+                <Link href="/" className="items-center gap-2 cursor-pointer hidden lg:flex">
                     <div className="flex flex-row items-end gap-2">
                         <h1 className="text-3xl font-bold tracking-tight">
                             <strong className="text-emerald-600">Gem</strong>ify
@@ -36,8 +39,8 @@ export function Topbar() {
                     </div>
                 </Link>
 
-                {/* Center Section */}
-                <div className="flex items-center gap-4">
+                {/* Center Section: QuerySelector always visible */}
+                <div className="flex-1 flex items-center gap-2 sm:justify-center justify-start sm:gap-4">
                     {isRootPage && (
                         <QuerySelector
                             onCityChange={() => { }}
@@ -46,7 +49,8 @@ export function Topbar() {
                     )}
                 </div>
 
-                <div className="flex gap-2">
+                {/* Right Section: hide on mobile, show on sm+ */}
+                <div className="gap-2 hidden sm:flex">
                     <Link
                         href="/add"
                         className="px-4 py-2 text-sm text-zinc-700 hover:text-emerald-600 transition-colors"

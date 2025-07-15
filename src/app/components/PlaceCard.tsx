@@ -24,7 +24,7 @@ export default function PlaceCard({ data, distance }: { data: Place; distance?: 
   console.log(data, 'data')
 
   return (
-    <Link href={`/places/${data.id}`} className="max-w-[220px] w-full">
+    <Link href={`/places/${data.id}`} className="max-w-[220px]">
       <div className="relative w-48">
         {data.image_path ? (
           <Image
@@ -48,7 +48,7 @@ export default function PlaceCard({ data, distance }: { data: Place; distance?: 
       </div>
       <div className="pt-2 pb-3 flex flex-col gap-0.5">
         <div className="font-medium text-gray-900 text-sm truncate">
-          {data.name || data.displayName || "Place name"}
+          {(data.name || data.displayName)?.slice(0, 23) || "Place name"}
         </div>
         <div className='flex flex-row gap-4'>
           <div className="flex items-center gap-1 text-xs text-gray-500">

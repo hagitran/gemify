@@ -45,27 +45,27 @@ export default function NotesSection({ notes, handleAddNote, place }: NotesSecti
     const noteInputRef = useRef<HTMLTextAreaElement>(null);
 
     return (
-        <div>
-            <div className="flex justify-end w-full gap-2 mb-4">
+        <div className="flex flex-col gap-y-4 sm:gap-y-2">
+            <div className="flex justify-end w-full gap-2">
                 <button
                     ref={addExperienceBtnRef}
                     type="button"
-                    className="px-4 py-2 text-sm text-zinc-700 hover:text-emerald-600 transition-colors text-right cursor-pointer"
+                    className="px-4 py-2 text-md text-zinc-700 hover:text-emerald-600 transition-colors text-right cursor-pointer"
                     onClick={handleAddExperience}
                 >
                     Add experience
-                    <div className="text-xs text-zinc-400">Been here already?</div>
+                    <div className="text-sm text-zinc-400">Been here already?</div>
                 </button>
                 <div
-                    className="px-4 py-2 text-sm text-zinc-700 hover:text-emerald-600 transition-colors text-right cursor-pointer"
+                    className="px-4 py-2 text-md text-zinc-700 hover:text-emerald-600 transition-colors text-right cursor-pointer"
                     onClick={handleTryNow}
                 >
                     Try now
-                    <div className="text-xs text-zinc-400">View address</div>
+                    <div className="text-sm text-zinc-400">View address</div>
                 </div>
             </div>
             {showAddress && (
-                <div ref={addressDivRef} className="mt-2 p-3 bg-zinc-100 rounded text-zinc-700 text-sm flex items-center gap-4 relative">
+                <div ref={addressDivRef} className="p-3 bg-zinc-100 rounded text-zinc-700 text-sm flex items-center gap-4 relative">
                     <span>{(place?.display_name || place?.address) ?? "No address available."}</span>
                     {copied && (
                         <span className="absolute top-2 right-2 flex items-center gap-1 bg-black/80 text-white font-medium px-3 py-1 rounded shadow-lg text-xs z-10">
@@ -76,9 +76,9 @@ export default function NotesSection({ notes, handleAddNote, place }: NotesSecti
                     <div className="text-zinc-400 absolute bottom-2 right-4 text-xs py-1 px-3">Map coming soon</div>
                 </div>
             )}
-            <h2 className="text-xl font-semibold mb-2 mt-4">Notes</h2>
+            <h2 className="text-xl font-semibold">Notes</h2>
             {notes && notes.length > 0 ? (
-                <ul className="space-y-2 mt-4">
+                <ul className="flex flex-col gap-y-2 sm:gap-y-2">
                     {notes.map((note) => (
                         <li key={note.id} className="bg-zinc-100 rounded p-3">
                             <div className="text-zinc-700">{note.note}</div>
@@ -87,10 +87,9 @@ export default function NotesSection({ notes, handleAddNote, place }: NotesSecti
                     ))}
                 </ul>
             ) : (
-                <div className="text-zinc-400 mt-4">No notes yet.</div>
+                <div className="text-zinc-400">No notes yet.</div>
             )}
             <NoteForm onSubmit={handleAddNote} textareaRef={noteInputRef} imageUploadRef={imageUploadRef} />
-
         </div>
     );
 } 

@@ -106,12 +106,12 @@ export default function AddPlacePage() {
     const [inputFocused, setInputFocused] = useState(false);
 
     // Add to recent queries
-    function addRecentQuery(query: string) {
+    const addRecentQuery = useCallback((query: string) => {
         setRecentQueries(prev => {
             const filtered = prev.filter(q => q !== query);
             return [query, ...filtered].slice(0, MAX_RECENT_QUERIES);
         });
-    }
+    }, []);
 
     async function handleAdd(e: React.FormEvent) {
         e.preventDefault();
@@ -270,16 +270,16 @@ export default function AddPlacePage() {
 
     return (
         <div className="flex flex-1 w-full h-full flex-col">
-            <div className="flex flex-row w-full h-full flex-1 mx-auto">
+            <div className="flex flex-col md:flex-row w-full h-full flex-1 mx-auto">
                 {/* Preview Side */}
-                <div className="flex flex-col items-center justify-center flex-1 bg-zinc-50 min-h-full">
+                <div className="flex flex-col items-center justify-center w-full md:flex-1 bg-zinc-50 min-h-full p-4 md:p-0">
                     <h1 className="text-xl font-medium mb-4">Preview</h1>
-                    <div className="flex items-center justify-center min-h-[400px] min-w-[320px]">
+                    <div className="flex items-center justify-center min-h-[300px] min-w-[220px] md:min-h-[400px] md:min-w-[320px]">
                         <PlaceCard data={placeData} />
                     </div>
                 </div>
                 {/* Form Side */}
-                <div className="flex-1 flex-col bg-white h-full p-8">
+                <div className="w-full md:flex-1 flex-col bg-white h-full p-4 md:p-8">
                     {/* Tab Bar (only on form side) */}
                     <div className="flex flex-row w-full mb-2 border-b border-zinc-200">
                         <button

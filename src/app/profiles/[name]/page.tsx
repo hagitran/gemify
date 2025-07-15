@@ -85,7 +85,7 @@ export default async function UserProfilePage({ params }: { params: Params }) {
                 <div className="text-zinc-500">{user.email}</div>
             </div>
             <div>
-                <h2 className="text-xl font-semibold mb-2">Ongoing</h2>
+                <h2 className="text-xl font-semibold mb-2">Ongoing finds</h2>
                 <OngoingReviewList initialReviews={ongoingReviews} />
             </div>
             <div>

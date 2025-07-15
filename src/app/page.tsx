@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { getRouteData } from "./actions";
 import PlaceCard from "./components/PlaceCard";
+import PlaceCardSkeleton from "./components/PlaceCardSkeleton";
 
 const getCookie = (name: string) => {
   if (typeof document === 'undefined') return null;
@@ -51,6 +52,7 @@ export default function Home() {
   const [routeData, setRouteData] = useState<Place[] | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; long: number } | null>(null);
   const cityCache = useRef<{ [key: string]: Place[] | null }>({});
+  const [isLoading, setIsLoading] = useState(false);
 
   // Helper to map UI root to DB value
   function mapRootToDb(root: string) {
@@ -107,12 +109,17 @@ export default function Home() {
   useEffect(() => {
     const dbRoot = mapRootToDb(root);
     const cacheKey = `${city}:${dbRoot ?? "all"}`;
+    setIsLoading(true);
+    setRouteData(null); // Show skeletons while loading
+
     if (cityCache.current[cacheKey]) {
       setRouteData(cityCache.current[cacheKey]);
+      setIsLoading(false);
     } else {
       getRouteData(city, dbRoot).then(data => {
         cityCache.current[cacheKey] = data;
         setRouteData(data);
+        setIsLoading(false);
       });
     }
   }, [city, root]);
@@ -139,7 +146,16 @@ export default function Home() {
 
         <div className="flex justify-center items-center w-full h-full flex-col gap-8">
 
-          {root && routeData && (
+          {/* Loading skeletons */}
+          {isLoading && (
+            <div className="flex w-full flex-wrap gap-x-8 gap-y-8 mt-2 max-w-6xl mx-auto justify-center items-center">
+              {Array.from({ length: 12 }).map((_, i) => (
+                <PlaceCardSkeleton key={i} />
+              ))}
+            </div>
+          )}
+
+          {!isLoading && routeData && (
             <div className="flex w-full h-full flex-col gap-4 justify-center items-center">
               {Array.isArray(routeData) && (routeData as Place[]).length > 0 && (
                 <div className="flex w-full flex-wrap gap-x-8 gap-y-8 mt-2 max-w-6xl mx-auto justify-center items-center">

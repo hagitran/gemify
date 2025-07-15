@@ -1,0 +1,1 @@
+ALTER TABLE "user_notes" ADD COLUMN "image_path" text;

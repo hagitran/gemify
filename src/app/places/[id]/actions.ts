@@ -16,8 +16,23 @@ export async function getUserNotesForPlace(placeId: number) {
     .from("user_notes")
     .select("*, user:user_id(name)")
     .eq("place_id", placeId);
-
-  console.log(data, "data");
   if (error) throw error;
+  return data;
+}
+
+export async function addNote({
+  place_id,
+  user_id,
+  note,
+}: {
+  place_id: number;
+  user_id: string;
+  note: string;
+}) {
+  const { data, error } = await supabase
+    .from("user_notes")
+    .insert([{ place_id, user_id, note }])
+    .select();
+  if (error) return { error };
   return data;
 }

@@ -3,9 +3,40 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import supabase from "@/supabaseClient";
 import Link from "next/link";
+import { authClient } from "../../lib/auth-client";
+import { addNote } from "./actions";
+import NotesSection from "./NotesSection";
+import { revalidatePath } from "next/cache";
 
 interface PlacePageProps {
     params: { id: string };
+}
+
+interface Note {
+    id: number;
+    note: string;
+    user_id: string;
+    user?: { name: string };
+}
+
+interface Place {
+    id: number;
+    name: string;
+    city: string;
+    type: string;
+    address: string;
+    image_path: string;
+    price: number;
+    lat?: number;
+    long?: number;
+    displayName?: string;
+    osmId?: string;
+    notes: string;
+    added_by: string;
+    description: string;
+    user: { name: string };
+    match_score?: number;
+    created_at?: string;
 }
 
 function getMatchBadge(score?: number) {
@@ -31,8 +62,8 @@ export default async function PlacePage({ params }: PlacePageProps) {
     const idNum = Number(id);
     if (isNaN(idNum)) return notFound();
 
-    let place = null;
-    let notes = [];
+    let place: Place | null = null;
+    let notes: Note[] = [];
     try {
         // Use force-cache to statically generate data at build time
         const { data: placeData } = await supabase
@@ -41,7 +72,6 @@ export default async function PlacePage({ params }: PlacePageProps) {
             .eq("id", idNum)
             .single();
         place = placeData;
-        console.log(placeData, 'plsd')
         const { data: notesData } = await supabase
             .from("user_notes")
             .select("*, user:user_id(name)")
@@ -56,7 +86,14 @@ export default async function PlacePage({ params }: PlacePageProps) {
     const price = place.price ? '$'.repeat(place.price) : '';
     const type = place.type ? place.type.charAt(0).toUpperCase() + place.type.slice(1) : '';
 
-    console.log(notes, 'notes')
+    // Server action for note submission
+    async function handleAddNote(formData: FormData) {
+        "use server";
+        const noteText = formData.get("note") as string;
+        const user_id = formData.get("user_id") as string || "anon";
+        await addNote({ place_id: place!.id, user_id, note: noteText });
+        revalidatePath(`/places/${place!.id}`);
+    }
 
     return (
         <div className="w-full flex flex-col items-center">
@@ -99,31 +136,16 @@ export default async function PlacePage({ params }: PlacePageProps) {
             {/* Details Section */}
             <div className="w-full max-w-2xl p-8">
                 <div className="flex flex-col">
-                    <div className="mb-8">This gem was added by <Link href={`/profiles/${place.user.name}`} className="underline underline-offset-2 decoration-emerald-600">{place.user.name}</Link></div>
-                </div>
-                <div className="flex justify-end w-full">
-                    <div className="px-4 py-2 text-sm text-zinc-700 hover:text-emerald-600 transition-colors text-right cursor-pointer">
-                        Add experience
-                        <div className="text-xs text-zinc-400">Been here already?</div>
-                    </div>
-                    <div className="px-4 py-2 text-sm text-zinc-700 hover:text-emerald-600 transition-colors text-right cursor-pointer">
-                        Try now
-                        <div className="text-xs text-zinc-400">View on map</div>
+                    <div className="mb-8">
+                        This gem was added by {" "}
+                        <Link href={`/profiles/${place.user.name}`} className="underline underline-offset-2 decoration-zinc-600">{place.user.name}</Link>
+                        {" "} on {" "}
+                        <span>
+                            {place.created_at ? new Date(place.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : ''}.
+                        </span>
                     </div>
                 </div>
-                <h2 className="text-xl font-semibold mb-2">Notes</h2>
-                {notes && notes.length > 0 ? (
-                    <ul className="space-y-2">
-                        {notes.map((note: any) => (
-                            <li key={note.id} className="bg-zinc-100 rounded p-3">
-                                <div className="text-zinc-700">{note.note}</div>
-                                <div className="text-xs text-zinc-500 mt-1">By {note.user?.name || note.user_id}</div>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <div className="text-zinc-400">No notes yet.</div>
-                )}
+                <NotesSection notes={notes} handleAddNote={handleAddNote} />
             </div>
         </div>
     );

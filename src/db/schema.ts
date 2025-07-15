@@ -39,6 +39,7 @@ export const userNotesTable = pgTable("user_notes", {
     .notNull()
     .references(() => placesTable.id),
   note: text("note"),
+  imagePath: text("image_path"),
 });
 
 export type InsertPlace = typeof placesTable.$inferInsert;

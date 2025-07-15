@@ -69,19 +69,19 @@ export default function OngoingReviewCard({ place, reviewId, onDiscard, onReview
             {/* Action button and discard overlay */}
             <div className="absolute top-2 right-2 z-10 flex flex-row items-end gap-2">
                 <button
-                    className="h-10 px-4 py-2 bg-white text-black rounded font-medium hover:opacity-90 cursor-pointer transition-colors text-xs shadow duration-200"
+                    className="px-4 py-2 bg-white text-black rounded font-medium hover:opacity-90 cursor-pointer transition-colors text-xs shadow duration-200"
                     onClick={onReview}
                 >
                     Review
                 </button>
                 {reviewId && onDiscard && (
                     <button
-                        className="h-10 px-2 py-2 w-full text-sm text-red-600 bg-white rounded hover:opacity-90 duration-200 transition-colors text-right cursor-pointer disabled:opacity-50 flex items-center gap-2"
+                        className="px-2 py-2 w-full text-xs font-medium text-red-600 bg-white rounded hover:opacity-90 duration-200 transition-colors text-right cursor-pointer disabled:opacity-50 flex items-center gap-2"
                         onClick={handleDiscard}
                         disabled={discarding}
                     >
-                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                        {discarding ? 'Discarding...' : 'Discard'}
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                        Discard
                     </button>
                 )}
             </div>

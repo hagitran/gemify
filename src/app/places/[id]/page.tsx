@@ -1,9 +1,7 @@
-import { getPlaceById, getUserNotesForPlace } from "./actions";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import supabase from "@/supabaseClient";
 import Link from "next/link";
-import { authClient } from "../../lib/auth-client";
 import { addNote } from "./actions";
 import NotesSection from "./NotesSection";
 import { revalidatePath } from "next/cache";
@@ -78,6 +76,7 @@ export default async function PlacePage({ params }: PlacePageProps) {
             .eq("place_id", idNum);
         notes = notesData || [];
     } catch (e) {
+        console.log(e)
         return notFound();
     }
     if (!place) return notFound();

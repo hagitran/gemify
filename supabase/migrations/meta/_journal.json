@@ -99,6 +99,13 @@
       "when": 1752567599006,
       "tag": "0013_cheerful_piledriver",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1752574869804,
+      "tag": "0014_powerful_jackpot",
+      "breakpoints": true
     }
   ]
 }

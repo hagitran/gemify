@@ -5,19 +5,7 @@ import PlaceCard from "../components/PlaceCard";
 import { createClient } from '@supabase/supabase-js';
 import { authClient } from "../lib/auth-client";
 import confetti from "canvas-confetti";
-
-// interface GeocodeResult {
-//     features: Array<{
-//         properties: {
-//             name: string;
-//             label: string;
-//             source?: string; // Add source for Photon/Nominatim
-//         };
-//         geometry: {
-//             coordinates: [number, number];
-//         };
-//     }>;
-// }
+import Image from "next/image";
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -70,30 +58,18 @@ interface NominatimFeature {
     type: 'Feature';
 }
 
-// Photon type (minimal, for union)
-interface PhotonProperties {
-    name: string;
-    label: string;
-    source: 'photon';
-    [key: string]: unknown;
-}
-interface PhotonGeometry {
-    type: 'Point';
-    coordinates: [number, number];
-}
-interface PhotonFeature {
-    geometry: PhotonGeometry;
-    properties: PhotonProperties;
-    type: 'Feature';
-}
-
-type GeocodeFeature = NominatimFeature | PhotonFeature;
-
-// Add type for addPlace result
-
 type AddPlaceResult = PlaceData[] | { error: unknown };
 
 const MAX_RECENT_QUERIES = 5;
+
+// Add getCookie utility if not already present
+const getCookie = (name: string) => {
+    if (typeof document === 'undefined') return null;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift();
+    return null;
+};
 
 export default function AddPlacePage() {
     const { data: session } = authClient.useSession();
@@ -200,11 +176,21 @@ export default function AddPlacePage() {
         }
         setIsSearching(true);
         addRecentQuery(query);
-        // Only use Nominatim
-        const lat = 10.8035553;
-        const lon = 106.6976776;
+
         const limit = 5;
-        const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=geojson&q=${encodeURIComponent(query)}&limit=${limit}`;
+        const cityCoords: Record<string, { lat: number; lon: number }> = {
+            hcmc: { lat: 10.7769, lon: 106.7009 },
+            sf: { lat: 37.7749, lon: -122.4194 },
+        };
+        // Get preferred city from session or cookie
+        let preferredCity = getCookie('preferredCity') || 'hcmc';
+        if (session?.user && typeof (session.user as any).preferredCity === 'string' && (session.user as any).preferredCity) {
+            preferredCity = (session.user as any).preferredCity;
+        }
+        const coords = cityCoords[preferredCity] || cityCoords['hcmc'];
+
+        const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=geojson&q=${encodeURIComponent(query)}&limit=${limit}&lat=${coords.lat}&lon=${coords.lon}`;
+        console.log(nominatimUrl, 'so')
 
         try {
             const res = await fetch(nominatimUrl);
@@ -221,6 +207,7 @@ export default function AddPlacePage() {
             }));
             setSearchResults(nominatimResults);
         } catch (error) {
+            console.log(error)
             setSearchResults([]);
         } finally {
             setIsSearching(false);
@@ -320,7 +307,7 @@ export default function AddPlacePage() {
                             {/* Recent queries dropdown */}
                             {recentQueries.length > 0 && !searchQuery && (
                                 <div className="absolute mt-12 bg-white border border-zinc-200 rounded-lg max-h-48 overflow-y-auto z-10 shadow-lg">
-                                    {recentQueries.map((q, idx) => (
+                                    {recentQueries.map((q) => (
                                         <button
                                             key={q}
                                             onClick={() => setSearchQuery(q)}
@@ -366,7 +353,7 @@ export default function AddPlacePage() {
                                             <span className="text-zinc-700 text-sm font-medium">Uploading...</span>
                                         </div>
                                     ) : placeData.image_path ? (
-                                        <img
+                                        <Image
                                             src={placeData.image_path}
                                             alt="Preview"
                                             className="w-64 h-64 object-cover rounded-2xl"

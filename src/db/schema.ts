@@ -6,6 +6,7 @@ import {
   smallint,
   doublePrecision,
   integer,
+  boolean,
 } from "drizzle-orm/pg-core";
 
 // Import auth schema
@@ -30,6 +31,7 @@ export const placesTable = pgTable("places", {
   imagePath: text("image_path"),
   price: smallint("price").default(0),
   addedBy: text("added_by").references(() => user.id),
+  ambiance: text("ambiance"), // new column
 });
 
 export const userNotesTable = pgTable("user_notes", {
@@ -42,7 +44,21 @@ export const userNotesTable = pgTable("user_notes", {
   imagePath: text("image_path"),
 });
 
+export const userReviewsTable = pgTable("user_reviews", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: text("user_id").references(() => user.id),
+  placeId: bigint("place_id", { mode: "number" })
+    .notNull()
+    .references(() => placesTable.id),
+  tried: boolean("tried"),
+  recommendedItem: text("recommended_item"),
+  price: smallint("price"),
+  ambiance: text("ambiance"),
+});
+
 export type InsertPlace = typeof placesTable.$inferInsert;
 export type SelectPlace = typeof placesTable.$inferSelect;
 export type InsertUserNote = typeof userNotesTable.$inferInsert;
 export type SelectUserNote = typeof userNotesTable.$inferSelect;
+export type InsertUserReview = typeof userReviewsTable.$inferInsert;
+export type SelectUserReview = typeof userReviewsTable.$inferSelect;

@@ -172,7 +172,7 @@ export default function NotesSection({ notes, handleAddNote, handleDeleteNote, p
                 )}
             </div>
             {showAddress && (
-                <div ref={addressDivRef} className="p-3 bg-zinc-100 rounded text-zinc-700 text-sm flex items-center gap-4 relative">
+                <div ref={addressDivRef} className="flex flex-col p-3 bg-zinc-100 rounded text-zinc-700 text-sm flex items-center gap-4 relative">
                     <span>{(place?.display_name || place?.address) ?? "No address available."}</span>
                     {copied && (
                         <span className="absolute top-2 right-2 flex items-center gap-1 bg-black/80 text-white font-medium px-3 py-1 rounded shadow-lg text-xs z-10">
@@ -180,7 +180,7 @@ export default function NotesSection({ notes, handleAddNote, handleDeleteNote, p
                             Copied!
                         </span>
                     )}
-                    <div className="text-zinc-400 absolute bottom-2 right-4 text-xs py-1 px-3">Map coming soon</div>
+                    <div className="text-zinc-400 block bottom-2 right-4 text-xs py-1 px-3">Map coming soon</div>
                 </div>
             )}
             <h2 className="text-xl font-semibold">Notes</h2>
@@ -188,10 +188,16 @@ export default function NotesSection({ notes, handleAddNote, handleDeleteNote, p
                 <ul className="flex flex-col gap-y-2 sm:gap-y-2">
                     {optimisticNotes.map((note) => {
                         const isOwnNote = session?.user?.id && note.user_id === session.user.id;
+                        const username = note.user?.name || note.user_id;
+                        const isAnon = username === 'anon';
                         return (
                             <li key={note.id} className="bg-zinc-100 rounded p-3 group relative items-center">
                                 <div className="text-zinc-700 flex-1">{note.note}</div>
-                                <Link href={`/${note.user?.name}`} className="text-xs text-zinc-500 hover:text-black cursor-pointer duration-200 mt-1">By {note.user?.name || note.user_id}</Link>
+                                {isAnon ? (
+                                    <span className="text-xs text-zinc-500 mt-1">By anon</span>
+                                ) : (
+                                    <Link href={`/${note.user?.name}`} className="text-xs text-zinc-500 hover:text-black cursor-pointer duration-200 mt-1">By {username}</Link>
+                                )}
                                 {isOwnNote && (
                                     <button
                                         className="absolute cursor-pointer top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-100 text-red-600 rounded px-2 py-1 text-xs font-medium hover:bg-red-200"

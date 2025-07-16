@@ -392,15 +392,16 @@ export default function AddPlacePage() {
                                 </div>
                             )}
                             {(isSearching && !selectedPlace) && (
-                                <div className="absolute top-full left-0 right-0 bg-white border border-zinc-200 rounded-xl mt-2 p-4 text-center text-zinc-500 shadow-lg">
+                                <div className="absolute top-full left-0 right-0 z-10 bg-white border border-zinc-200 rounded-xl mt-2 p-4 text-center text-zinc-500 shadow-lg">
                                     <div className="flex items-center justify-center gap-2">
                                         <div className="animate-spin rounded-full h-4 w-4 border-b-2"></div>
                                         Searching...
                                     </div>
                                 </div>
                             )}
-                            {(searchResults.length > 0 && !selectedPlace && inputFocused) && (
-                                <div className="absolute mt-12 bg-white border border-zinc-200 rounded-lg max-h-48 overflow-y-auto z-10 shadow-lg">
+                            {(searchResults.length > 0 && inputFocused) && (
+                                <div className="absolute top-full left-0 right-0 bg-white border border-zinc-200 rounded-xl mt-2 p-2 text-center max-h-56 z-10 overflow-y-auto text-zinc-500 shadow-lg">
+                                    {/* <div className="absolute mt-12 bg-white border border-zinc-200 rounded-lg max-h-48 overflow-y-auto z-10 shadow-lg"> */}
                                     {searchResults.map((place, index) => (
                                         <button
                                             key={index}

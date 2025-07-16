@@ -51,7 +51,7 @@ export default function PlaceCard({ data, distance }: { data: Place; distance?: 
         </div>
         <div className='flex flex-row gap-4'>
           <div className="flex items-center gap-1 text-xs text-gray-500">
-            {Number.isInteger(data.price) && data.price > 0 ? '$'.repeat(data.price) : 'Price'}
+            {Number.isInteger(data.price) && data.price > 0 ? '$'.repeat(data.price) : ''}
           </div>
           <div className="flex items-center gap-1 text-xs text-gray-500">
             {typeof distance === 'number' && (

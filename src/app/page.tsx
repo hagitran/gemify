@@ -39,18 +39,8 @@ interface Place {
   description: string;
 }
 
-// Cookie helpers
-function setCookie(name: string, value: string, days = 365) {
-  const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
-  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
-}
-function getCookie(name: string) {
-  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-  return match ? decodeURIComponent(match[2]) : null;
-}
-
 export default function Home() {
-  const { city, setCity, root } = useCityRoot();
+  const { city, root } = useCityRoot();
   const [routeData, setRouteData] = useState<Place[] | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; long: number } | null>(null);
   const cityCache = useRef<{ [key: string]: Place[] | null }>({});
@@ -60,24 +50,6 @@ export default function Home() {
   function mapRootToDb(root: string) {
     return root === "All" ? null : root.toLowerCase();
   }
-
-  // On mount, set city from cookie if exists, else fetch geolocation and set cookie
-  useEffect(() => {
-    const cookieCity = getCookie('preferredCity');
-    if (cookieCity) {
-      setCity(cookieCity);
-      return; // Do not fetch or update if cookie exists
-    }
-    // If no cookie, fetch and set
-    fetch('/api/geo')
-      .then(res => res.json())
-      .then(data => {
-        if (data.city) {
-          setCity(data.city);
-          setCookie('preferredCity', data.city);
-        }
-      });
-  }, [setCity]);
 
   // Listen for cache invalidation events
   useEffect(() => {
@@ -142,14 +114,10 @@ export default function Home() {
     }
   }, []);
 
-
-
   return (
     <div className="flex w-full h-full flex-col font-[family-name:var(--font-geist-sans)] text-zinc-700">
       <main className="flex flex-col flex-1 gap-8 items-center pt-8">
-
         <div className="flex justify-center items-center w-full h-full flex-col gap-8">
-
           {/* Loading skeletons */}
           {isLoading && (
             <div className="flex w-full flex-wrap sm:gap-x-8 sm:gap-y-8 mt-2 max-w-6xl sm:mx-auto justify-evenly sm:justify-center items-center">
@@ -186,7 +154,6 @@ export default function Home() {
             </div>
           )}
         </div>
-
       </main>
     </div>
   );

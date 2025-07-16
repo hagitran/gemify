@@ -96,13 +96,19 @@ export default async function PlacePage({ params }: { params: Params }) {
         revalidatePath(`/places/${place?.id}`);
     }
 
+    // Always use the original upload version for the place detail page
+    let imageUrl = place.image_path;
+    if (imageUrl && imageUrl.includes('/thumbnails/')) {
+        imageUrl = imageUrl.replace('/thumbnails/', '/uploads/');
+    }
+
     return (
         <div className="w-full flex flex-col items-center overflow-x-hidden px-0 gap-4 sm:gap-0">
             {/* Hero Section */}
             <div className="relative w-full max-w-full sm:max-w-2xl h-72 sm:h-80 bg-zinc-100 rounded-b-lg sm:rounded-b-2xl overflow-hidden mb-4 sm:mb-8">
-                {place.image_path ? (
+                {imageUrl ? (
                     <Image
-                        src={place.image_path}
+                        src={imageUrl}
                         alt={place.name || place.display_name || 'Preview'}
                         fill
                         className="object-cover w-full h-full"

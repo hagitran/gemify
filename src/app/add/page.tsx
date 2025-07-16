@@ -221,38 +221,55 @@ export default function AddPlacePage() {
         setError(null);
 
         try {
-            // Resize image client-side before upload
-            const resizedBlob = await resizeImage(file, 700, 700);
-            const filePath = `uploads/${Date.now()}_${file.name}`;
-            const { error } = await supabase.storage.from('images').upload(filePath, resizedBlob as Blob, {
-                contentType: 'image/jpeg',
-            });
+            // Use a clear, timestamped, and random base name for both original and thumbnail
+            const timestamp = Date.now();
+            const random = Math.random().toString(36).slice(2, 8);
+            // Sanitize filename: replace spaces with underscores
+            const sanitizedFileName = file.name.replace(/\s+/g, '_');
+            const originalFileName = `${timestamp}_${random}_${sanitizedFileName}`;
+            const originalPath = `uploads/${originalFileName}`;
+            const thumbnailPath = `thumbnails/${originalFileName}`;
 
-            if (error) {
-                setError(error.message);
-            } else {
-                // Try to get thumbnail public URL first
-                const thumbPath = `thumbnails/${file.name}`;
-                let thumbUrl = '';
-                try {
-                    const { data: thumbData } = supabase.storage.from('images').getPublicUrl(thumbPath);
-                    if (thumbData?.publicUrl) {
-                        const res = await fetch(thumbData.publicUrl, { method: 'HEAD' });
-                        if (res.ok) thumbUrl = thumbData.publicUrl;
-                    }
-                } catch { }
-                if (thumbUrl) {
-                    setPlaceData(prev => ({
-                        ...prev,
-                        image_path: thumbUrl
-                    }));
-                } else {
-                    const { data: urlData } = supabase.storage.from('images').getPublicUrl(filePath);
-                    setPlaceData(prev => ({
-                        ...prev,
-                        image_path: urlData?.publicUrl || ''
-                    }));
+            // 1. Upload the original file to uploads/
+            const { error: origError } = await supabase.storage.from('images').upload(originalPath, file, { upsert: true });
+            if (origError) {
+                setError('Original upload error: ' + origError.message);
+                setImageUploading(false);
+                return;
+            }
+
+            // 2. Upload the resized image to thumbnails/
+            const resizedBlob = await resizeImage(file, 700, 700);
+            const { error: thumbError } = await supabase.storage.from('images').upload(thumbnailPath, resizedBlob as Blob, {
+                contentType: 'image/jpeg',
+                upsert: true,
+            });
+            if (thumbError) {
+                setError('Thumbnail upload error: ' + thumbError.message);
+                setImageUploading(false);
+                return;
+            }
+
+            // 3. Set image_path to the thumbnail public URL if available, else fallback to the original
+            let thumbUrl = '';
+            try {
+                const { data: thumbData } = supabase.storage.from('images').getPublicUrl(thumbnailPath);
+                if (thumbData?.publicUrl) {
+                    const res = await fetch(thumbData.publicUrl, { method: 'HEAD' });
+                    if (res.ok) thumbUrl = thumbData.publicUrl;
                 }
+            } catch { }
+            if (thumbUrl) {
+                setPlaceData(prev => ({
+                    ...prev,
+                    image_path: thumbUrl
+                }));
+            } else {
+                const { data: urlData } = supabase.storage.from('images').getPublicUrl(originalPath);
+                setPlaceData(prev => ({
+                    ...prev,
+                    image_path: urlData?.publicUrl || ''
+                }));
             }
         } catch (error) {
             console.log(error)

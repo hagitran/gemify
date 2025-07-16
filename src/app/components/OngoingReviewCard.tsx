@@ -36,12 +36,18 @@ export default function OngoingReviewCard({ place, reviewId, onDiscard, onReview
         setDiscarding(false);
     };
 
+    // Always use the original upload version for ongoing review
+    let imageUrl = place.image_path;
+    if (imageUrl && imageUrl.includes('/thumbnails/')) {
+        imageUrl = imageUrl.replace('/thumbnails/', '/uploads/');
+    }
+
     return (
         <div className="relative w-full max-w-full sm:max-w-2xl h-56 sm:h-64 bg-zinc-100 rounded-lg sm:rounded-2xl overflow-hidden shadow mb-4">
             <Link href={`/places/${place.id}`}>
-                {place.image_path ? (
+                {imageUrl ? (
                     <Image
-                        src={place.image_path}
+                        src={imageUrl}
                         alt={place.name || place.display_name || "Preview"}
                         fill
                         className="object-cover w-full h-full"

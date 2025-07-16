@@ -15,7 +15,7 @@ export const user = pgTable("user", {
     .notNull(),
   image: text("image"),
   karma: integer("karma").default(0),
-  preferredCity: text("preferred_city").default("hcmc"),
+  preferredCity: text("preferred_city").default("sf"),
   preferredRoot: text("preferred_root").default(""),
   createdAt: timestamp("created_at")
     .$defaultFn(() => /* @__PURE__ */ new Date())

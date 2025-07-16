@@ -39,6 +39,16 @@ interface Place {
   description: string;
 }
 
+// Cookie helpers
+function setCookie(name: string, value: string, days = 365) {
+  const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
+  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
+}
+function getCookie(name: string) {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return match ? decodeURIComponent(match[2]) : null;
+}
+
 export default function Home() {
   const { city, setCity, root } = useCityRoot();
   const [routeData, setRouteData] = useState<Place[] | null>(null);
@@ -51,12 +61,21 @@ export default function Home() {
     return root === "All" ? null : root.toLowerCase();
   }
 
-  // Fetch city from IP-based geolocation API
+  // On mount, set city from cookie if exists, else fetch geolocation and set cookie
   useEffect(() => {
+    const cookieCity = getCookie('preferredCity');
+    if (cookieCity) {
+      setCity(cookieCity);
+      return; // Do not fetch or update if cookie exists
+    }
+    // If no cookie, fetch and set
     fetch('/api/geo')
       .then(res => res.json())
       .then(data => {
-        if (data.city) setCity(data.city);
+        if (data.city) {
+          setCity(data.city);
+          setCookie('preferredCity', data.city);
+        }
       });
   }, [setCity]);
 

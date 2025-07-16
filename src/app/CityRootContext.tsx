@@ -11,7 +11,7 @@ type CityRootContextType = {
 const CityRootContext = createContext<CityRootContextType | undefined>(undefined);
 
 export const CityRootProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [city, setCity] = useState("hcmc");
+    const [city, setCity] = useState("sf");
     const [root, setRoot] = useState("All");
 
     return (

@@ -87,24 +87,20 @@ export default function Home() {
   useEffect(() => {
     const dbRoot = mapRootToDb(root);
     const cacheKey = `${city}:${dbRoot ?? "all"}`;
-    setIsLoading(true);
-    setRouteData(null); // Show skeletons while loading
 
+    // If cache exists, show it immediately
     if (cityCache.current[cacheKey]) {
-      // Already filtered and cached for this city/root
       setRouteData(cityCache.current[cacheKey]);
-      setIsLoading(false);
-    } else if (cityCache.current[`${city}:all`]) {
-      // We have all data for this city, filter client-side
-      let filtered: Place[] | null = cityCache.current[`${city}:all`] ?? null;
-      if (dbRoot && filtered) {
-        filtered = filtered.filter(place => place.type?.toLowerCase() === dbRoot);
-      }
-      cityCache.current[cacheKey] = filtered;
-      setRouteData(filtered);
-      setIsLoading(false);
+      setIsLoading(false); // No skeleton
+      // Fetch in background to update cache/state if data might be stale
+      getRouteData(city, dbRoot).then(data => {
+        cityCache.current[cacheKey] = data;
+        setRouteData(data);
+      });
     } else {
-      // Fetch from server
+      // No cache, show skeleton
+      setIsLoading(true);
+      setRouteData(null);
       getRouteData(city, dbRoot).then(data => {
         cityCache.current[cacheKey] = data;
         setRouteData(data);

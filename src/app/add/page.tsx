@@ -439,6 +439,8 @@ export default function AddPlacePage() {
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 16v-4m0 0V8m0 4h4m-4 0H8m12 4v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4" />
                                             </svg>
                                             <span className="text-zinc-500 text-sm font-medium">Add image</span>
+                                            <span className="text-zinc-500 text-xs">Only JPG and PNG</span>
+
                                         </>
                                     )}
                                     <input

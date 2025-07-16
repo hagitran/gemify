@@ -3,6 +3,7 @@ import { getUserByName, getUserNotes, getUserReviews } from "../actions";
 import Link from "next/link";
 import supabase from "@/supabaseClient";
 import OngoingReviewList from "../../components/OngoingReviewList";
+import OngoingReviewSectionClient from "./OngoingReviewSectionClient";
 
 export const revalidate = 60;
 
@@ -84,10 +85,15 @@ export default async function UserProfilePage({ params }: { params: Params }) {
                 <h1 className="text-3xl font-bold">{user.name}</h1>
                 <div className="text-zinc-500">{user.email}</div>
             </div>
-            <div>
-                <h2 className="text-xl font-semibold mb-2">Ongoing finds</h2>
-                <OngoingReviewList initialReviews={ongoingReviews} />
-            </div>
+            {/* Assume you have access to session and profileName */}
+            {/* const { data: session } = authClient.useSession(); */}
+            {/* const profileName = ...; */}
+
+            {/* Only render the OngoingReviewList section if the user is the profile owner (user is viewing their own profile). */}
+            {/* This part of the code was not provided in the edit_specification, so it's commented out. */}
+            {/* {session?.user?.name === profileName && ( */}
+            <OngoingReviewSectionClient profileName={user.name} ongoingReviews={ongoingReviews} />
+            {/* )} */}
             <div>
                 <h2 className="text-xl font-semibold mb-2">Notes</h2>
                 {notes && notes.length > 0 ? (

@@ -24,18 +24,17 @@ export default function PlaceCard({ data, distance }: { data: Place; distance?: 
   console.log(data, 'data')
 
   return (
-    <Link href={`/places/${data.id}`} className="max-w-[220px]">
-      <div className="relative w-48">
+    <Link href={`/places/${data.id}`} className="max-w-42 sm:max-w-full">
+      <div className="relative w-42 h-42">
         {data.image_path ? (
           <Image
             src={data.image_path}
             alt={data.name || data.displayName || 'Preview'}
-            width={192}
-            height={192}
-            className="aspect-square object-cover rounded-2xl w-48 h-48 bg-zinc-200"
+            fill
+            className="aspect-square object-cover rounded-2xl bg-zinc-200"
           />
         ) : (
-          <div className='aspect-square object-cover bg-zinc-200 min-w-48 min-h-48 rounded-2xl' />
+          <div className='aspect-square object-cover bg-zinc-200 w-42 h-42 rounded-2xl' />
         )}
         {/* Type badge overlay */}
         <span className="absolute top-2 left-2 bg-white/90 text-gray-900 text-xs font-semibold rounded-full px-3 py-1 shadow-sm">

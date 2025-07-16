@@ -137,7 +137,7 @@ export default function Home() {
 
           {/* Loading skeletons */}
           {isLoading && (
-            <div className="flex w-full flex-wrap gap-x-8 gap-y-8 mt-2 max-w-6xl mx-auto justify-center items-center">
+            <div className="flex w-full flex-wrap sm:gap-x-8 sm:gap-y-8 mt-2 max-w-6xl sm:mx-auto justify-evenly sm:justify-center items-center">
               {Array.from({ length: 15 }).map((_, i) => (
                 <PlaceCardSkeleton key={i} />
               ))}
@@ -145,9 +145,9 @@ export default function Home() {
           )}
 
           {!isLoading && routeData && (
-            <div className="flex w-full h-full flex-col gap-4 justify-center items-center">
+            <div className="flex w-full h-full gap-2 sm:gap-4 sm:justify-center items-center">
               {Array.isArray(routeData) && (routeData as Place[]).length > 0 && (
-                <div className="flex w-full flex-wrap gap-x-8 gap-y-8 mt-2 max-w-6xl mx-auto justify-center items-center">
+                <div className="flex w-full flex-wrap sm:gap-x-8 sm:gap-y-8 mt-2 max-w-6xl sm:mx-auto justify-evenly sm:justify-center items-center">
                   {(routeData as Place[]).map((place: Place) => {
                     let distance = null;
                     if (

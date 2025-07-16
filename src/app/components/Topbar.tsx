@@ -42,7 +42,7 @@ export function Topbar() {
                 </Link>
 
                 {/* Center Section: QuerySelector always visible */}
-                <div className="flex-1 flex items-center gap-2 sm:justify-center justify-start sm:gap-4">
+                <div className="flex-1 flex items-center gap-2 sm:justify-center justify-start sm:gap-4 sm:px-8 sm:py-2">
                     {isRootPage && (
                         <QuerySelector
                             city={city}

@@ -4,14 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { getRouteData } from "./actions";
 import PlaceCard from "./components/PlaceCard";
 import PlaceCardSkeleton from "./components/PlaceCardSkeleton";
-
-const getCookie = (name: string) => {
-  if (typeof document === 'undefined') return null;
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(';').shift();
-  return null;
-};
+import { useCityRoot } from "./CityRootContext";
 
 function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
   const toRad = (x: number) => (x * Math.PI) / 180;
@@ -47,8 +40,7 @@ interface Place {
 }
 
 export default function Home() {
-  const [city, setCity] = useState("hcmc");
-  const [root, setRoot] = useState("All");
+  const { city, setCity, root } = useCityRoot();
   const [routeData, setRouteData] = useState<Place[] | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; long: number } | null>(null);
   const cityCache = useRef<{ [key: string]: Place[] | null }>({});
@@ -59,28 +51,14 @@ export default function Home() {
     return root === "All" ? null : root.toLowerCase();
   }
 
-  // Load user preferences from cookies
+  // Fetch city from IP-based geolocation API
   useEffect(() => {
-    const savedCity = getCookie('preferredCity');
-    const savedRoot = getCookie('preferredRoot');
-    if (savedCity) setCity(savedCity);
-    if (savedRoot) setRoot(savedRoot);
-  }, []);
-
-  // Listen for cookie changes from QuerySelector
-  useEffect(() => {
-    const checkCookies = () => {
-      const savedCity = getCookie('preferredCity');
-      const savedRoot = getCookie('preferredRoot');
-
-      if (savedCity && savedCity !== city) setCity(savedCity);
-      if (savedRoot && savedRoot !== root) setRoot(savedRoot);
-    };
-
-    // Check cookies periodically
-    const interval = setInterval(checkCookies, 1000);
-    return () => clearInterval(interval);
-  }, [city, root]);
+    fetch('/api/geo')
+      .then(res => res.json())
+      .then(data => {
+        if (data.city) setCity(data.city);
+      });
+  }, [setCity]);
 
   // Listen for cache invalidation events
   useEffect(() => {
@@ -113,9 +91,20 @@ export default function Home() {
     setRouteData(null); // Show skeletons while loading
 
     if (cityCache.current[cacheKey]) {
+      // Already filtered and cached for this city/root
       setRouteData(cityCache.current[cacheKey]);
       setIsLoading(false);
+    } else if (cityCache.current[`${city}:all`]) {
+      // We have all data for this city, filter client-side
+      let filtered: Place[] | null = cityCache.current[`${city}:all`] ?? null;
+      if (dbRoot && filtered) {
+        filtered = filtered.filter(place => place.type?.toLowerCase() === dbRoot);
+      }
+      cityCache.current[cacheKey] = filtered;
+      setRouteData(filtered);
+      setIsLoading(false);
     } else {
+      // Fetch from server
       getRouteData(city, dbRoot).then(data => {
         cityCache.current[cacheKey] = data;
         setRouteData(data);
@@ -149,7 +138,7 @@ export default function Home() {
           {/* Loading skeletons */}
           {isLoading && (
             <div className="flex w-full flex-wrap gap-x-8 gap-y-8 mt-2 max-w-6xl mx-auto justify-center items-center">
-              {Array.from({ length: 12 }).map((_, i) => (
+              {Array.from({ length: 15 }).map((_, i) => (
                 <PlaceCardSkeleton key={i} />
               ))}
             </div>

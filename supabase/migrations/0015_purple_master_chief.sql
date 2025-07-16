@@ -1,0 +1,1 @@
+ALTER TABLE "places" ALTER COLUMN "ambiance" SET DATA TYPE text[];

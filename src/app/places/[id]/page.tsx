@@ -5,6 +5,7 @@ import Link from "next/link";
 import { addNote } from "../actions";
 import NotesSection from "./NotesSection";
 import { revalidatePath } from "next/cache";
+import { deleteNote } from "../actions";
 
 interface Note {
     id: number;
@@ -89,6 +90,12 @@ export default async function PlacePage({ params }: { params: Params }) {
         revalidatePath(`/places/${place!.id}`);
     }
 
+    async function handleDeleteNote(noteId: number) {
+        "use server";
+        await deleteNote(noteId);
+        revalidatePath(`/places/${place?.id}`);
+    }
+
     return (
         <div className="w-full flex flex-col items-center overflow-x-hidden px-0 gap-4 sm:gap-0">
             {/* Hero Section */}
@@ -139,7 +146,12 @@ export default async function PlacePage({ params }: { params: Params }) {
                         </span>
                     </div>
                 </div>
-                <NotesSection notes={notes} place={place} handleAddNote={handleAddNote} />
+                <NotesSection
+                    notes={notes}
+                    place={place}
+                    handleAddNote={handleAddNote}
+                    handleDeleteNote={handleDeleteNote}
+                />
             </div>
         </div>
     );

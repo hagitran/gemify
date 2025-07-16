@@ -19,7 +19,7 @@ export default function NoteForm({ onSubmit, className = "", textareaRef, imageU
         formData.append("note", note);
         if (image) formData.append("image", image);
         if (session?.user?.id) formData.append("user_id", session.user.id);
-        await onSubmit(formData);
+        onSubmit(formData);
         setNote("");
         setImage(null);
         setLoading(false);

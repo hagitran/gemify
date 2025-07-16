@@ -57,3 +57,9 @@ export async function addUserReview({
   if (error) return { error };
   return data;
 }
+
+export async function deleteNote(noteId: number) {
+  const { error } = await supabase.from("user_notes").delete().eq("id", noteId);
+  if (error) throw error;
+  return true;
+}

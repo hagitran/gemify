@@ -106,6 +106,27 @@
       "when": 1752574869804,
       "tag": "0014_powerful_jackpot",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1752648622573,
+      "tag": "0015_purple_master_chief",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1752648716644,
+      "tag": "0016_normal_black_knight",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1752648732851,
+      "tag": "0017_fixed_rumiko_fujikawa",
+      "breakpoints": true
     }
   ]
 }

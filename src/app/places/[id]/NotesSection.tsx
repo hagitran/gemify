@@ -16,14 +16,16 @@ interface Note {
 interface NotesSectionProps {
     notes: Note[];
     handleAddNote: (formData: FormData) => void;
+    handleDeleteNote: (noteId: number) => void;
     place: { id: number; address?: string; display_name?: string };
 }
 
-export default function NotesSection({ notes, handleAddNote, place }: NotesSectionProps) {
+export default function NotesSection({ notes, handleAddNote, handleDeleteNote, place }: NotesSectionProps) {
     const [showAddress, setShowAddress] = useState(false);
     const [copied, setCopied] = useState(false);
     const [userReview, setUserReview] = useState<{ id: number } | null>(null);
     const [discarding, setDiscarding] = useState(false);
+    const [optimisticNotes, setOptimisticNotes] = useState<Note[]>(notes);
 
     const { data: session } = authClient.useSession();
     const addExperienceBtnRef = useRef<HTMLButtonElement>(null);
@@ -46,6 +48,49 @@ export default function NotesSection({ notes, handleAddNote, place }: NotesSecti
     useEffect(() => {
         fetchUserReview();
     }, [fetchUserReview]);
+
+    // Update optimisticNotes when notes prop changes (e.g. after server update)
+    useEffect(() => {
+        setOptimisticNotes(notes);
+    }, [notes]);
+
+    // Optimistic add note handler
+    const optimisticAddNote = (formData: FormData) => {
+        const noteText = formData.get("note") as string;
+        if (!noteText) return;
+        const user_id = session?.user?.id || "anon";
+        const user = session?.user ? { name: session.user.name } : undefined;
+        const tempNote: Note = { id: Date.now(), note: noteText, user_id, user };
+        setOptimisticNotes(prev => [...prev, tempNote]);
+        try {
+            handleAddNote(formData);
+        } catch {
+            setOptimisticNotes(prev => prev.filter(n => n.id !== tempNote.id));
+        } finally {
+            setTimeout(() => setOptimisticNotes(prev => prev.filter(n => n.id !== tempNote.id)), 2000); // fallback to reset after 1s
+        }
+    };
+
+    // Optimistic delete note handler
+    const handleDiscardNote = async (noteId: number) => {
+        const filteredNotes = optimisticNotes.filter(n => n.id !== noteId);
+        console.log(filteredNotes.length)
+        console.log(optimisticNotes.length)
+        setOptimisticNotes(filteredNotes);
+        try {
+            // Call server to delete note
+            await handleDeleteNote(noteId);
+        } catch (e) {
+            // If deletion fails, restore the note
+            console.log(e, 'oi')
+            setOptimisticNotes(prev => {
+                const noteToRestore = optimisticNotes.find(n => n.id === noteId);
+                return noteToRestore ? [...prev, noteToRestore] : prev;
+            });
+        } finally {
+            setTimeout(() => setOptimisticNotes(prev => prev.filter(n => n.id !== noteId)), 5000);
+        }
+    };
 
     async function handleDiscardReview() {
         if (!userReview) return;
@@ -84,7 +129,6 @@ export default function NotesSection({ notes, handleAddNote, place }: NotesSecti
             }
         }
     };
-    console.log(place, 'poj')
     const noteInputRef = useRef<HTMLTextAreaElement>(null);
 
     return (
@@ -140,19 +184,31 @@ export default function NotesSection({ notes, handleAddNote, place }: NotesSecti
                 </div>
             )}
             <h2 className="text-xl font-semibold">Notes</h2>
-            {notes && notes.length > 0 ? (
+            {optimisticNotes.length > 0 ? (
                 <ul className="flex flex-col gap-y-2 sm:gap-y-2">
-                    {notes.map((note) => (
-                        <li key={note.id} className="bg-zinc-100 rounded p-3">
-                            <div className="text-zinc-700">{note.note}</div>
-                            <Link href={`/${note.user?.name}`} className="text-xs text-zinc-500 hover:text-black cursor-pointer duration-200 mt-1">By {note.user?.name || note.user_id}</Link>
-                        </li>
-                    ))}
+                    {optimisticNotes.map((note) => {
+                        const isOwnNote = session?.user?.id && note.user_id === session.user.id;
+                        return (
+                            <li key={note.id} className="bg-zinc-100 rounded p-3 group relative items-center">
+                                <div className="text-zinc-700 flex-1">{note.note}</div>
+                                <Link href={`/${note.user?.name}`} className="text-xs text-zinc-500 hover:text-black cursor-pointer duration-200 mt-1">By {note.user?.name || note.user_id}</Link>
+                                {isOwnNote && (
+                                    <button
+                                        className="absolute cursor-pointer top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-100 text-red-600 rounded px-2 py-1 text-xs font-medium hover:bg-red-200"
+                                        onClick={() => handleDiscardNote(note.id)}
+                                        title="Delete note"
+                                    >
+                                        Discard
+                                    </button>
+                                )}
+                            </li>
+                        );
+                    })}
                 </ul>
             ) : (
                 <div className="text-zinc-400">No notes yet.</div>
             )}
-            <NoteForm onSubmit={handleAddNote} textareaRef={noteInputRef} imageUploadRef={imageUploadRef} />
+            <NoteForm onSubmit={optimisticAddNote} textareaRef={noteInputRef} imageUploadRef={imageUploadRef} />
         </div>
     );
 } 

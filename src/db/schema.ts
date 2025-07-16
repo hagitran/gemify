@@ -31,7 +31,7 @@ export const placesTable = pgTable("places", {
   imagePath: text("image_path"),
   price: smallint("price").default(0),
   addedBy: text("added_by").references(() => user.id),
-  ambiance: text("ambiance"), // new column
+  ambiance: text("ambiance").array(),
 });
 
 export const userNotesTable = pgTable("user_notes", {

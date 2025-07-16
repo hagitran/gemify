@@ -13,6 +13,7 @@
     "@geocodeearth/autocomplete-element": "^0.0.9",
     "@supabase/supabase-js": "^2.50.5",
     "@vercel/analytics": "^1.5.0",
+    "@vercel/functions": "^2.2.3",
     "better-auth": "^1.2.12",
     "canvas-confetti": "^1.9.3",
     "dotenv": "^17.2.0",

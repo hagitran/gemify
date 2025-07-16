@@ -1,11 +1,13 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { addPlace } from "./actions";
 import PlaceCard from "../components/PlaceCard";
 import { createClient } from '@supabase/supabase-js';
 import { authClient } from "../lib/auth-client";
 import confetti from "canvas-confetti";
 import Image from "next/image";
+import { useCityRoot } from "../CityRootContext";
+import { useRouter } from "next/navigation";
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -27,7 +29,7 @@ interface PlaceData {
     notes: string;
     added_by: string;
     description: string;
-    ambiance?: string;
+    ambiance: string[]; // now an array
 }
 
 // Add Nominatim types
@@ -63,15 +65,6 @@ type AddPlaceResult = PlaceData[] | { error: unknown };
 
 const MAX_RECENT_QUERIES = 5;
 
-// Add getCookie utility if not already present
-const getCookie = (name: string) => {
-    if (typeof document === 'undefined') return null;
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(';').shift();
-    return null;
-};
-
 interface SessionUser {
     id: string;
     name: string;
@@ -80,8 +73,19 @@ interface SessionUser {
     // ...other fields as needed
 }
 
+const AMBIANCE_OPTIONS = [
+    { value: "cozy", label: "Cozy" },
+    { value: "lively", label: "Lively" },
+    { value: "work-friendly", label: "Work-Friendly" },
+    { value: "trendy", label: "Trendy" },
+    { value: "traditional", label: "Traditional" },
+    { value: "romantic", label: "Romantic" },
+];
+
 export default function AddPlacePage() {
+    const { city: preferredCity, setCity: setPreferredCity } = useCityRoot();
     const { data: session } = authClient.useSession();
+    const router = useRouter();
     const [placeData, setPlaceData] = useState<PlaceData>({
         id: "",
         name: "",
@@ -93,9 +97,8 @@ export default function AddPlacePage() {
         notes: "",
         added_by: "anon",
         description: "",
-        ambiance: "",
+        ambiance: [], // now an array
     });
-
     const [result, setResult] = useState<AddPlaceResult | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -106,6 +109,8 @@ export default function AddPlacePage() {
     const [imageUploading, setImageUploading] = useState(false);
     const [recentQueries, setRecentQueries] = useState<string[]>([]);
     const [inputFocused, setInputFocused] = useState(false);
+    const [ambianceDropdownOpen, setAmbianceDropdownOpen] = useState(false);
+    const ambianceDropdownRef = useRef<HTMLDivElement>(null);
 
     // Add to recent queries
     const addRecentQuery = useCallback((query: string) => {
@@ -113,6 +118,15 @@ export default function AddPlacePage() {
             const filtered = prev.filter(q => q !== query);
             return [query, ...filtered].slice(0, MAX_RECENT_QUERIES);
         });
+    }, []);
+
+    // Fetch city from IP-based geolocation API on mount
+    useEffect(() => {
+        fetch('/api/geo')
+            .then(res => res.json())
+            .then(data => {
+                if (data.city) setPreferredCity(data.city);
+            });
     }, []);
 
     async function handleAdd(e: React.FormEvent) {
@@ -128,12 +142,22 @@ export default function AddPlacePage() {
         setLoading(false);
         if (res && !Array.isArray(res) && 'error' in res && res.error) {
             setError(typeof res.error === "string" ? res.error : (res.error as Error).message || String(res.error));
+        } else if (res && Array.isArray(res) && res[0]?.id) {
+            // Trigger confetti before redirect
+            confetti({
+                particleCount: 120,
+                spread: 80,
+                origin: { y: 0.7 },
+            });
+            setTimeout(() => {
+                router.push(`/places/${res[0].id}`);
+            }, 800); // allow confetti to show for a moment
         } else {
             setResult(res);
             setPlaceData({
                 id: "",
                 name: "",
-                city: "",
+                city: preferredCity,
                 type: "",
                 address: "",
                 image_path: "",
@@ -141,13 +165,13 @@ export default function AddPlacePage() {
                 notes: "",
                 description: "",
                 added_by: "anon",
-                ambiance: "",
+                ambiance: [],
             });
             setSearchQuery("");
             setSelectedPlace(null);
             setSearchResults([]);
             // Invalidate city cache in Home page
-            const cityValue = placeData.city === "San Francisco" ? "sf" : "hcmc";
+            const cityValue = preferredCity
             window.dispatchEvent(new CustomEvent('invalidateCityCache', { detail: { city: cityValue } }));
         }
     }
@@ -194,13 +218,13 @@ export default function AddPlacePage() {
             hcmc: { lat: 10.7769, lon: 106.7009 },
             sf: { lat: 37.7749, lon: -122.4194 },
         };
-        // Get preferred city from session or cookie
-        let preferredCity = getCookie('preferredCity') || 'hcmc';
+
+        let cityKey = preferredCity || 'sf';
         const user = session?.user as SessionUser | undefined;
         if (user?.preferredCity) {
-            preferredCity = user.preferredCity;
+            cityKey = user.preferredCity;
         }
-        const coords = cityCoords[preferredCity] || cityCoords['hcmc'];
+        const coords = cityCoords[cityKey] || cityCoords['sf'];
 
         const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=geojson&q=${encodeURIComponent(query)}&limit=${limit}&lat=${coords.lat}&lon=${coords.lon}`;
         console.log(nominatimUrl, 'so')
@@ -225,7 +249,7 @@ export default function AddPlacePage() {
         } finally {
             setIsSearching(false);
         }
-    }, [session, addRecentQuery]);
+    }, [session, addRecentQuery, preferredCity]);
 
     function handlePlaceSelect(place: NominatimFeature) {
         const [long, lat] = place.geometry.coordinates;
@@ -248,6 +272,30 @@ export default function AddPlacePage() {
     // Add a handler for price selection
     function handlePriceSelect(price: number) {
         setPlaceData(prev => ({ ...prev, price }));
+    }
+
+    // Close dropdown on outside click
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (ambianceDropdownRef.current && !ambianceDropdownRef.current.contains(event.target as Node)) {
+                setAmbianceDropdownOpen(false);
+            }
+        }
+        if (ambianceDropdownOpen) {
+            document.addEventListener("mousedown", handleClickOutside);
+        } else {
+            document.removeEventListener("mousedown", handleClickOutside);
+        }
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [ambianceDropdownOpen]);
+
+    function toggleAmbianceOption(option: string) {
+        setPlaceData(prev => {
+            const selected = prev.ambiance.includes(option)
+                ? prev.ambiance.filter(a => a !== option)
+                : [...prev.ambiance, option];
+            return { ...prev, ambiance: selected };
+        });
     }
 
     // Debounced search effect
@@ -299,7 +347,19 @@ export default function AddPlacePage() {
                             Conversational <span className="ml-2 text-xs text-zinc-400">(Coming soon)</span>
                         </button>
                     </div>
-                    <h1 className="text-2xl font-medium py-6">Share a gem</h1>
+                    <div className="flex flex-row items-center justify-between">
+                        <h1 className="flex text-2xl font-medium py-6">Share a gem</h1>
+                        <div className="flex flex-col min-h-0">
+                            {/* <span className="text-md font-medium text-zinc-700">Where abouts?</span> */}
+                            <select
+                                className="rounded-md bg-white focus:border-emerald-500 py-2 focus:outline-none text-zinc-700 text-sm"
+                                value={preferredCity}
+                                onChange={(e) => setPreferredCity(e.target.value)}
+                            >
+                                <option value="sf">San Francisco</option>
+                                <option value="hcmc">Ho Chi Minh City</option>
+                            </select>
+                        </div>                    </div>
                     <form onSubmit={handleAdd} className="flex flex-col gap-6 w-full">
                         {/* Geocode search */}
                         <div className="flex flex-col w-full relative">
@@ -422,21 +482,34 @@ export default function AddPlacePage() {
                                 </div>
                                 <div className="flex flex-col">
                                     <label htmlFor="place-ambiance" className="block text-sm font-medium text-gray-700 mb-1">Ambiance</label>
-                                    <select
-                                        id="place-ambiance"
-                                        value={placeData.ambiance}
-                                        onChange={(e) => setPlaceData(prev => ({ ...prev, ambiance: e.target.value }))}
-                                        className="p-2 border border-zinc-300 w-full rounded-lg focus:outline-none focus:ring-2 text-md"
-                                        required
-                                    >
-                                        <option value="">What&apos;s the ambiance like?</option>
-                                        <option value="cozy">Cozy</option>
-                                        <option value="lively">Lively</option>
-                                        <option value="work-friendly">Work-Friendly</option>
-                                        <option value="trendy">Trendy</option>
-                                        <option value="traditional">Traditional</option>
-                                        <option value="romantic">Romantic</option>
-                                    </select>
+                                    <div className="relative" ref={ambianceDropdownRef}>
+                                        <button
+                                            type="button"
+                                            className="p-2 border border-zinc-300 w-full rounded-lg focus:outline-none focus:ring-2 text-md bg-white flex justify-between items-center"
+                                            onClick={() => setAmbianceDropdownOpen(open => !open)}
+                                            id="place-ambiance"
+                                        >
+                                            {placeData.ambiance.length > 0
+                                                ? placeData.ambiance.map(val => AMBIANCE_OPTIONS.find(o => o.value === val)?.label).join(", ")
+                                                : "Select ambiance..."}
+                                            <svg className={`w-4 h-4 ml-2 transition-transform ${ambianceDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                                        </button>
+                                        {ambianceDropdownOpen && (
+                                            <div className="absolute z-10 mt-1 w-full bg-white border border-zinc-200 rounded shadow-lg max-h-60 overflow-y-auto">
+                                                {AMBIANCE_OPTIONS.map(option => (
+                                                    <label key={option.value} className="flex items-center px-4 py-2 cursor-pointer hover:bg-zinc-50">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={placeData.ambiance.includes(option.value)}
+                                                            onChange={() => toggleAmbianceOption(option.value)}
+                                                            className="mr-2 accent-emerald-600"
+                                                        />
+                                                        {option.label}
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="flex flex-col">
                                     <label htmlFor="place-address" className="block text-sm font-medium text-gray-700 mb-1">Address</label>

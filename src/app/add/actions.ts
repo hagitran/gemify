@@ -16,12 +16,13 @@ export async function addPlace(place: {
   long?: number;
   displayName?: string;
   osmId?: string;
-  ambiance?: string;
+  ambiance?: string[];
 }) {
   // Compose the insert object
+  console.log(place, "place data");
   const insertObj: Record<string, unknown> = {
     name: place.name,
-    city: place.city === "San Francisco" ? "sf" : "hcmc",
+    city: place.city === "San Francisco" || "sf" ? "sf" : "hcmc",
     type: place.type || "classic",
     display_name: place.displayName || place.address,
     osm_id: place.osmId || null,

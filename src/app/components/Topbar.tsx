@@ -5,6 +5,7 @@ import { UserDropdown } from "./UserDropdown";
 import { QuerySelector } from "./QuerySelector";
 import { authClient } from "../lib/auth-client";
 import { usePathname } from "next/navigation";
+import { useCityRoot } from "../CityRootContext";
 
 export function Topbar() {
     const pathname = usePathname();
@@ -14,6 +15,8 @@ export function Topbar() {
         data: session,
         isPending,
     } = authClient.useSession();
+
+    const { city, setCity, root, setRoot } = useCityRoot();
 
     const handleSignOut = async () => {
         try {
@@ -25,8 +28,7 @@ export function Topbar() {
 
     return (
         <header
-            className={`sticky top-0 z-50 w-full bg-zinc-50 border-b border-zinc-200 px-2 sm:px-4 py-3 ${!isRootPage ? 'hidden sm:block' : ''
-                }`}
+            className={`sticky top-0 z-50 w-full bg-zinc-50 border-b border-zinc-200 px-2 sm:px-4 py-3 ${!isRootPage ? 'hidden sm:block' : ''}`}
         >
             <div className="max-w-7xl mx-auto flex items-center">
                 {/* Logo */}
@@ -43,8 +45,10 @@ export function Topbar() {
                 <div className="flex-1 flex items-center gap-2 sm:justify-center justify-start sm:gap-4">
                     {isRootPage && (
                         <QuerySelector
-                            onCityChange={() => { }}
-                            onRootChange={() => { }}
+                            city={city}
+                            root={root}
+                            onCityChange={setCity}
+                            onRootChange={setRoot}
                         />
                     )}
                 </div>

@@ -14,7 +14,7 @@ export async function GET(request: Request) {
 
   console.log(data, "ewoifj");
 
-  const shown = data.country == "vietnam" ? "hcmc" : "sf";
+  const shown = data.country == "VN" ? "hcmc" : "sf";
   console.log(shown);
 
   return Response.json({ city: shown });

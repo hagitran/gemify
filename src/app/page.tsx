@@ -116,7 +116,7 @@ export default function Home() {
 
   return (
     <div className="flex w-full h-full flex-col font-[family-name:var(--font-geist-sans)] text-zinc-700">
-      <main className="flex flex-col flex-1 gap-8 items-center pt-8">
+      <main className="flex flex-col flex-1 gap-8 items-center pt-16">
         <div className="flex justify-center items-center w-full h-full flex-col gap-8">
           {/* Loading skeletons */}
           {isLoading && (

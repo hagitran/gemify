@@ -129,6 +129,10 @@ export default function AddPlacePage() {
             });
     }, []);
 
+    useEffect(() => {
+        setPlaceData(prev => ({ ...prev, city: preferredCity }));
+    }, [preferredCity]);
+
     async function handleAdd(e: React.FormEvent) {
         e.preventDefault();
         setError(null);
@@ -428,7 +432,10 @@ export default function AddPlacePage() {
                             <select
                                 className="rounded-md bg-white focus:border-emerald-500 py-2 focus:outline-none text-zinc-700 text-sm"
                                 value={preferredCity}
-                                onChange={(e) => setPreferredCity(e.target.value)}
+                                onChange={(e) => {
+                                    setPreferredCity(e.target.value);
+                                    setPlaceData(prev => ({ ...prev, city: e.target.value }));
+                                }}
                             >
                                 <option value="sf">San Francisco</option>
                                 <option value="hcmc">Ho Chi Minh City</option>

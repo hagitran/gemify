@@ -1,8 +1,8 @@
 "use client";
 import { authClient } from "../../lib/auth-client";
-import OngoingReviewList from "../../components/OngoingReviewList";
+import OngoingReviewList, { OngoingReview } from "../../components/OngoingReviewList";
 
-export default function OngoingReviewSectionClient({ profileName, ongoingReviews }: { profileName: string, ongoingReviews: any[] }) {
+export default function OngoingReviewSectionClient({ profileName, ongoingReviews }: { profileName: string, ongoingReviews: OngoingReview[] }) {
     const { data: session } = authClient.useSession();
     if (!session?.user?.name || session.user.name !== profileName) return null;
     return (

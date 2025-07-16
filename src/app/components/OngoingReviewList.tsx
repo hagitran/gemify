@@ -19,7 +19,7 @@ interface Place {
     ambiance?: string;
 }
 
-interface OngoingReview {
+export interface OngoingReview {
     id: number;
     place: Place;
 }

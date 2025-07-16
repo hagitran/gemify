@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { getUserByName, getUserNotes, getUserReviews } from "../actions";
 import Link from "next/link";
 import supabase from "@/supabaseClient";
-import OngoingReviewList from "../../components/OngoingReviewList";
 import OngoingReviewSectionClient from "./OngoingReviewSectionClient";
 
 export const revalidate = 60;

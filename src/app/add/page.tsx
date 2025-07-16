@@ -176,6 +176,43 @@ export default function AddPlacePage() {
         }
     }
 
+    async function resizeImage(file: File, maxWidth = 700, maxHeight = 700) {
+        return new Promise<Blob>((resolve, reject) => {
+            const img = new window.Image();
+            const url = URL.createObjectURL(file);
+            img.onload = () => {
+                let { width, height } = img;
+                const aspect = width / height;
+                if (width > maxWidth || height > maxHeight) {
+                    if (aspect > maxWidth / maxHeight) {
+                        width = maxWidth;
+                        height = Math.round(maxWidth / aspect);
+                    } else {
+                        height = maxHeight;
+                        width = Math.round(maxHeight * aspect);
+                    }
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    reject(new Error('Could not get canvas context'));
+                    URL.revokeObjectURL(url);
+                    return;
+                }
+                ctx.drawImage(img, 0, 0, width, height);
+                canvas.toBlob((blob) => {
+                    if (blob) resolve(blob);
+                    else reject(new Error('Thumbnail creation failed'));
+                    URL.revokeObjectURL(url);
+                }, 'image/jpeg', 0.85);
+            };
+            img.onerror = reject;
+            img.src = url;
+        });
+    }
+
     async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -184,18 +221,38 @@ export default function AddPlacePage() {
         setError(null);
 
         try {
+            // Resize image client-side before upload
+            const resizedBlob = await resizeImage(file, 700, 700);
             const filePath = `uploads/${Date.now()}_${file.name}`;
-            const { error } = await supabase.storage.from('images').upload(filePath, file);
+            const { error } = await supabase.storage.from('images').upload(filePath, resizedBlob as Blob, {
+                contentType: 'image/jpeg',
+            });
 
             if (error) {
                 setError(error.message);
             } else {
-                // Get public URL
-                const { data: urlData } = supabase.storage.from('images').getPublicUrl(filePath);
-                setPlaceData(prev => ({
-                    ...prev,
-                    image_path: urlData?.publicUrl || ''
-                }));
+                // Try to get thumbnail public URL first
+                const thumbPath = `thumbnails/${file.name}`;
+                let thumbUrl = '';
+                try {
+                    const { data: thumbData } = supabase.storage.from('images').getPublicUrl(thumbPath);
+                    if (thumbData?.publicUrl) {
+                        const res = await fetch(thumbData.publicUrl, { method: 'HEAD' });
+                        if (res.ok) thumbUrl = thumbData.publicUrl;
+                    }
+                } catch { }
+                if (thumbUrl) {
+                    setPlaceData(prev => ({
+                        ...prev,
+                        image_path: thumbUrl
+                    }));
+                } else {
+                    const { data: urlData } = supabase.storage.from('images').getPublicUrl(filePath);
+                    setPlaceData(prev => ({
+                        ...prev,
+                        image_path: urlData?.publicUrl || ''
+                    }));
+                }
             }
         } catch (error) {
             console.log(error)

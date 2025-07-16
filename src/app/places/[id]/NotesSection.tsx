@@ -196,7 +196,7 @@ export default function NotesSection({ notes, handleAddNote, handleDeleteNote, p
                                 {isAnon ? (
                                     <span className="text-xs text-zinc-500 mt-1">By anon</span>
                                 ) : (
-                                    <Link href={`/${note.user?.name}`} className="text-xs text-zinc-500 hover:text-black cursor-pointer duration-200 mt-1">By {username}</Link>
+                                    <Link href={`/profiles/${note.user?.name}`} className="text-xs text-zinc-500 hover:text-black cursor-pointer duration-200 mt-1">By {username}</Link>
                                 )}
                                 {isOwnNote && (
                                     <button

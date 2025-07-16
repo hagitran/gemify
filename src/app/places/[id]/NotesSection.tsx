@@ -172,7 +172,7 @@ export default function NotesSection({ notes, handleAddNote, handleDeleteNote, p
                 )}
             </div>
             {showAddress && (
-                <div ref={addressDivRef} className="flex flex-col p-3 bg-zinc-100 rounded text-zinc-700 text-sm flex items-center gap-4 relative">
+                <div ref={addressDivRef} className="flex flex-col p-3 bg-zinc-100 rounded text-zinc-700 text-sm items-center gap-4 relative">
                     <span>{(place?.display_name || place?.address) ?? "No address available."}</span>
                     {copied && (
                         <span className="absolute top-2 right-2 flex items-center gap-1 bg-black/80 text-white font-medium px-3 py-1 rounded shadow-lg text-xs z-10">

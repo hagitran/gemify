@@ -22,7 +22,11 @@ export async function addPlace(place: {
   console.log(place, "place data");
   const insertObj: Record<string, unknown> = {
     name: place.name,
-    city: place.city === "San Francisco" || "sf" ? "sf" : "hcmc",
+    city: ["sf", "san francisco"].includes(
+      (place.city || "").trim().toLowerCase()
+    )
+      ? "sf"
+      : "hcmc",
     type: place.type || "classic",
     display_name: place.displayName || place.address,
     osm_id: place.osmId || null,

@@ -155,7 +155,7 @@ export default function AddPlacePage() {
             });
             setTimeout(() => {
                 router.push(`/places/${res[0].id}`);
-            }, 800); // allow confetti to show for a moment
+            }, 300); // allow confetti to show for a moment
         } else {
             setResult(res);
             setPlaceData({
@@ -486,7 +486,7 @@ export default function AddPlacePage() {
                                     {searchResults.map((place, index) => (
                                         <button
                                             key={index}
-                                            onClick={() => handlePlaceSelect(place)}
+                                            onMouseDown={() => handlePlaceSelect(place)}
                                             className="w-full text-left p-4 cursor-pointer hover:bg-zinc-50 border-b border-zinc-100 last:border-b-0 transition-colors duration-150"
                                         >
                                             <div className="font-semibold text-zinc-900">{place.properties.name}</div>

@@ -56,9 +56,36 @@ export const userReviewsTable = pgTable("user_reviews", {
   ambiance: text("ambiance"),
 });
 
+/**
+ * MVP Taste Profile: captures core user taste dimensions
+ */
+export const userTasteProfile = pgTable("user_taste_profile", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => user.id),
+  engagementStyle: doublePrecision("engagement_style").notNull().default(0.5), // 0 = utilitarian, 1 = experiential
+  noveltySeeking: doublePrecision("novelty_seeking").notNull().default(0.5), // 0 = safe/familiar, 1 = adventurous
+  priceElasticity: doublePrecision("price_elasticity").notNull().default(0.5), // 0 = budget-first, 1 = free-spending
+  aestheticSensitivity: doublePrecision("aesthetic_sensitivity")
+    .notNull()
+    .default(0.5), // 0 = functional, 1 = design-first
+  healthConsciousness: doublePrecision("health_consciousness")
+    .notNull()
+    .default(0.5), // 0 = indulgence, 1 = health-first
+  socialMode: doublePrecision("social_mode").notNull().default(0.5), // 0 = solo, 1 = group-oriented
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
 export type InsertPlace = typeof placesTable.$inferInsert;
 export type SelectPlace = typeof placesTable.$inferSelect;
 export type InsertUserNote = typeof userNotesTable.$inferInsert;
 export type SelectUserNote = typeof userNotesTable.$inferSelect;
 export type InsertUserReview = typeof userReviewsTable.$inferInsert;
 export type SelectUserReview = typeof userReviewsTable.$inferSelect;
+export type InsertUserTasteProfile = typeof userTasteProfile.$inferInsert;
+export type SelectUserTasteProfile = typeof userTasteProfile.$inferSelect;

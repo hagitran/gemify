@@ -127,6 +127,13 @@
       "when": 1752648732851,
       "tag": "0017_fixed_rumiko_fujikawa",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1752762125095,
+      "tag": "0018_giant_magdalene",
+      "breakpoints": true
     }
   ]
 }

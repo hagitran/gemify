@@ -20,15 +20,18 @@ interface Place {
 }
 
 export default function PlaceCard({ data, distance }: { data: Place; distance?: number }) {
-
-  console.log(data, 'data')
+  // Always use the thumbnail version for the home page
+  let imageUrl = data.image_path;
+  if (imageUrl && !imageUrl.includes('/thumbnails/')) {
+    imageUrl = imageUrl.replace('/uploads/', '/thumbnails/');
+  }
 
   return (
     <Link href={`/places/${data.id}`} className="max-w-42 sm:max-w-full">
       <div className="relative w-42 h-42">
-        {data.image_path ? (
+        {imageUrl ? (
           <Image
-            src={data.image_path}
+            src={imageUrl}
             alt={data.name || data.displayName || 'Preview'}
             fill
             className="aspect-square object-cover rounded-2xl bg-zinc-200"
@@ -51,7 +54,7 @@ export default function PlaceCard({ data, distance }: { data: Place; distance?: 
         </div>
         <div className='flex flex-row gap-4'>
           <div className="flex items-center gap-1 text-xs text-gray-500">
-            {Number.isInteger(data.price) && data.price > 0 ? '$'.repeat(data.price) : ''}
+            {Number.isInteger(data.price) && data.price > 0 ? '$'.repeat(data.price) : 'Price'}
           </div>
           <div className="flex items-center gap-1 text-xs text-gray-500">
             {typeof distance === 'number' && (

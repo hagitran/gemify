@@ -60,16 +60,27 @@ export function UserDropdown({ userName, userEmail, onSignOut }: UserDropdownPro
             </button>
 
             {isOpen && (
-                <Link href={`/profiles/${userName}`} className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-zinc-200 py-1 z-50">
-                    <button className="w-full text-left px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 transition-colors cursor-pointer">
-                        <div className="flex items-center gap-2">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                            View profile
-                        </div>
-                    </button>
-
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-zinc-200 py-1 z-50">
+                    <Link href={`/profiles/${userName}`}>
+                        <button className="w-full text-left px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 transition-colors cursor-pointer">
+                            <div className="flex items-center gap-2">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                View profile
+                            </div>
+                        </button>
+                    </Link>
+                    <Link href="/lists">
+                        <button className="w-full text-left px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 transition-colors cursor-pointer">
+                            <div className="flex items-center gap-2">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18M3 12h18M3 17h18" />
+                                </svg>
+                                View all lists
+                            </div>
+                        </button>
+                    </Link>
                     <button
                         onClick={handleSignOut}
                         className="w-full text-left px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 transition-colors hover:text-red-600 cursor-pointer"
@@ -81,7 +92,7 @@ export function UserDropdown({ userName, userEmail, onSignOut }: UserDropdownPro
                             Sign out
                         </div>
                     </button>
-                </Link>
+                </div>
             )}
         </div>
     );

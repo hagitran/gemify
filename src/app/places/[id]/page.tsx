@@ -6,6 +6,7 @@ import { addNote } from "../actions";
 import NotesSection from "./NotesSection";
 import { revalidatePath } from "next/cache";
 import { deleteNote } from "../actions";
+import { recordPlaceView } from "../actions";
 
 interface Note {
     id: number;
@@ -58,6 +59,8 @@ export default async function PlacePage({ params }: { params: Params }) {
 
     let place: Place | null = null;
     let notes: Note[] = [];
+    let viewCount = 0;
+    // let triedCount = 0;
     try {
 
         const { data: placeData } = await supabase
@@ -71,11 +74,27 @@ export default async function PlacePage({ params }: { params: Params }) {
             .select("*, user:user_id(name)")
             .eq("place_id", idNum);
         notes = notesData || [];
+        // Fetch total view count and tried count for this place
+        const { data: reviewRows } = await supabase
+            .from("user_reviews")
+            .select("view_count, tried")
+            .eq("place_id", idNum);
+        if (reviewRows && Array.isArray(reviewRows)) {
+            viewCount = reviewRows.reduce((sum, row) => sum + (row.view_count || 0), 0);
+            // triedCount = reviewRows.filter(row => row.tried === true).length;
+        }
     } catch (e) {
         console.log(e)
         return notFound();
     }
     if (!place) return notFound();
+
+    // Record the view (server action)
+    // Try to get user_id from cookies (if SSR) or fallback to 'anon'
+    let user_id = "anon";
+    // If you have a way to get the user id on the server, use it here
+    // For now, default to anon for SSR
+    await recordPlaceView({ user_id, place_id: idNum });
 
     const badge = getMatchBadge(place.match_score);
     const price = place.price ? '$'.repeat(place.price) : '';
@@ -143,14 +162,29 @@ export default async function PlacePage({ params }: { params: Params }) {
             {/* Details Section */}
             <div className="flex flex-col w-full max-w-full sm:max-w-2xl p-4 sm:p-8 gap-8 sm:gap-0">
                 <div className="flex flex-col">
-                    <div className="mb-6 sm:mb-8 text-lg sm:text-md">
-                        This gem was added by {" "}
-                        <Link href={`/profiles/${place.user.name}`} className="underline underline-offset-2 decoration-zinc-600">{place.user.name}</Link>
-                        {" "} on {" "}
-                        <span>
-                            {place.created_at ? new Date(place.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : ''}.
-                        </span>
+                    <div className="mb-6 sm:mb-8 text-lg sm:text-md flex flex-row justify-between">
+                        <div>
+                            This gem was added by {" "}
+                            <Link href={`/profiles/${place.user.name}`} className="underline underline-offset-2 decoration-zinc-600">{place.user.name}</Link>
+                            {" "} on {" "}
+                            <span>
+                                {place.created_at ? new Date(place.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : ''}.
+                            </span>
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                            <div className="text-zinc-500 text-base">
+                                {viewCount + 1} {(viewCount + 1) === 1 ? 'view' : 'views'}
+                            </div>
+                            {/* <div className="text-zinc-500 text-base">
+                                {triedCount > 0 ? (
+                                    <>{triedCount} {triedCount === 1 ? 'person has' : 'people have'} tried</>
+                                ) : (
+                                    <span className="italic">Be the first to try!</span>
+                                )}
+                            </div> */}
+                        </div>
                     </div>
+
                 </div>
                 <NotesSection
                     notes={notes}

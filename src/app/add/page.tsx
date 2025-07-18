@@ -8,6 +8,7 @@ import confetti from "canvas-confetti";
 import Image from "next/image";
 import { useCityRoot } from "../CityRootContext";
 import { useRouter } from "next/navigation";
+import MultiSelectDropdown from "../components/MultiSelectDropdown";
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -566,34 +567,14 @@ export default function AddPlacePage() {
                                 </div>
                                 <div className="flex flex-col">
                                     <label htmlFor="place-ambiance" className="block text-sm font-medium text-gray-700 mb-1">Ambiance</label>
-                                    <div className="relative" ref={ambianceDropdownRef}>
-                                        <button
-                                            type="button"
-                                            className="p-2 border border-zinc-300 w-full rounded-lg focus:outline-none focus:ring-2 text-md bg-white flex justify-between items-center"
-                                            onClick={() => setAmbianceDropdownOpen(open => !open)}
-                                            id="place-ambiance"
-                                        >
-                                            {placeData.ambiance.length > 0
-                                                ? placeData.ambiance.map(val => AMBIANCE_OPTIONS.find(o => o.value === val)?.label).join(", ")
-                                                : "Select ambiance..."}
-                                            <svg className={`w-4 h-4 ml-2 transition-transform ${ambianceDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                                        </button>
-                                        {ambianceDropdownOpen && (
-                                            <div className="absolute z-10 mt-1 w-full bg-white border border-zinc-200 rounded shadow-lg max-h-60 overflow-y-auto">
-                                                {AMBIANCE_OPTIONS.map(option => (
-                                                    <label key={option.value} className="flex items-center px-4 py-2 cursor-pointer hover:bg-zinc-50">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={placeData.ambiance.includes(option.value)}
-                                                            onChange={() => toggleAmbianceOption(option.value)}
-                                                            className="mr-2 accent-emerald-600"
-                                                        />
-                                                        {option.label}
-                                                    </label>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
+                                    <MultiSelectDropdown
+                                        options={AMBIANCE_OPTIONS}
+                                        selected={placeData.ambiance}
+                                        onChange={(selected) => setPlaceData(prev => ({ ...prev, ambiance: selected as string[] }))}
+                                        placeholder="Select ambiance..."
+                                        buttonClassName=""
+                                        dropdownClassName=""
+                                    />
                                 </div>
                                 <div className="flex flex-col">
                                     <label htmlFor="place-address" className="block text-sm font-medium text-gray-700 mb-1">Address</label>

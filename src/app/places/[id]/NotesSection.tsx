@@ -5,7 +5,7 @@ import Link from "next/link";
 import { authClient } from "../../lib/auth-client";
 import { addUserReview } from "../actions";
 import supabase from "@/supabaseClient";
-import { addPlaceToItinerary } from "../actions";
+import { addPlaceTolist } from "../actions";
 import { useRouter } from "next/navigation";
 import MultiSelectDropdown from "../../components/MultiSelectDropdown";
 
@@ -132,7 +132,7 @@ export default function NotesSection({ notes, handleAddNote, handleDeleteNote, p
     return (
         <div className="flex flex-col gap-y-4 sm:gap-y-2">
             <div className="flex justify-end w-full gap-8">
-                <AddToItineraryButton placeId={place.id} />
+                <AddTolistButton placeId={place.id} />
 
                 {userReview ? (
                     <div className="flex gap-8 items-center">
@@ -210,10 +210,10 @@ export default function NotesSection({ notes, handleAddNote, handleDeleteNote, p
     );
 }
 
-function AddToItineraryButton({ placeId }: { placeId: number }) {
+function AddTolistButton({ placeId }: { placeId: number }) {
     "use client";
     const { data: session } = authClient.useSession();
-    const [itineraries, setItineraries] = useState<any[]>([]);
+    const [lists, setlists] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [adding, setAdding] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -225,114 +225,115 @@ function AddToItineraryButton({ placeId }: { placeId: number }) {
     useEffect(() => {
         if (!session?.user?.id) return;
         supabase
-            .from("itineraries")
+            .from("lists")
             .select("id, name")
             .eq("created_by", session.user.id)
             .then(({ data }) => {
-                setItineraries(data || []);
+                setlists(data || []);
                 setLoading(false);
             });
     }, [session?.user?.id]);
 
-    // Add a special option for creating a new itinerary
-    const NEW_ITINERARY_VALUE = "__new__";
-    const itineraryOptions = [
-        ...itineraries.map((it: any) => ({ value: it.id, label: it.name })),
-        { value: NEW_ITINERARY_VALUE, label: "New itinerary" },
+    // Add a special option for creating a new list
+    const NEW_list_VALUE = "__new__";
+    const listOptions = [
+        { value: NEW_list_VALUE, label: "Create a new list" },
+        ...lists.map((it: any) => ({ value: it.id, label: it.name })),
     ];
 
-    const handleAddToItineraries = async () => {
+    const handleAddTolists = async () => {
         setAdding(true);
         setError(null);
         setSuccess(null);
         let anyError = false;
-        let newItineraryId: number | null = null;
+        let newlistId: number | null = null;
         let selected = selectedIds;
-        // If 'New itinerary' is selected, create it first
-        if (selected.some(id => String(id) === NEW_ITINERARY_VALUE)) {
+        // If 'New list' is selected, create it first
+        if (selected.some(id => String(id) === NEW_list_VALUE)) {
             const { data, error } = await supabase
-                .from("itineraries")
-                .insert([{ name: "New Itinerary", created_by: session?.user.id }])
+                .from("lists")
+                .insert([{ name: "New list", created_by: session?.user.id }])
                 .select();
             if (error || !data || !data[0]) {
-                setError("Failed to create itinerary");
+                setError("Failed to create list");
                 setAdding(false);
                 return;
             }
-            newItineraryId = data[0].id;
-            // Replace NEW_ITINERARY_VALUE with the new id, filter to numbers only
+            newlistId = data[0].id;
+            // Replace NEW_list_VALUE with the new id, filter to numbers only
             selected = selected.filter(id => typeof id === 'number');
-            if (newItineraryId !== null) selected = [...selected, newItineraryId];
+            if (newlistId !== null) selected = [...selected, newlistId];
             setSelectedIds(selected);
         } else {
             // Always filter to numbers only
             selected = selected.filter((id): id is number => typeof id === 'number');
         }
-        // Only add to itineraries with numeric IDs
+        // Only add to lists with numeric IDs
         const numericSelected = selected.filter((id): id is number => typeof id === 'number');
-        for (const itineraryId of numericSelected) {
-            const res = await addPlaceToItinerary({ itinerary_id: itineraryId, place_id: placeId });
+        for (const listId of numericSelected) {
+            const res = await addPlaceTolist({ list_id: listId, place_id: placeId });
             if (res && res.error) {
                 setError(`Some failed: ${res.error}`);
                 anyError = true;
             }
         }
         if (!anyError) {
-            setSuccess("Added to selected itineraries!");
-            router.push(`/gemlists/${newItineraryId || numericSelected[0]}`);
+            setSuccess("Added to selected lists! Redirecting...");
+            router.push(`/gemlists/${newlistId || numericSelected[0]}`);
         }
         setAdding(false);
         setTimeout(() => { setSuccess(null); setError(null); }, 2000);
     };
 
-    // Only allow one 'New itinerary' at a time
+    // Only allow one 'New list' at a time
     const handleDropdownChange = (selected: (string | number)[]) => {
-        if (selected.some(id => String(id) === NEW_ITINERARY_VALUE)) {
-            setSelectedIds([NEW_ITINERARY_VALUE]);
+        if (selected.some(id => String(id) === NEW_list_VALUE)) {
+            setSelectedIds([NEW_list_VALUE]);
         } else {
             setSelectedIds(selected.filter((id): id is number => typeof id === 'number'));
         }
     };
 
-    const handleCreateItinerary = async () => {
+    const handleCreatelist = async () => {
         setAdding(true);
         setError(null);
         setSuccess(null);
         const { data, error } = await supabase
-            .from("itineraries")
-            .insert([{ name: "New Itinerary", created_by: session?.user.id }])
+            .from("lists")
+            .insert([{ name: "New list", created_by: session?.user.id }])
             .select();
         setAdding(false);
         if (error || !data || !data[0]) {
-            setError("Failed to create itinerary");
+            setError("Failed to create list");
             return;
         }
-        router.push(`/itineraries/${data[0].id}`);
+        router.push(`/lists/${data[0].id}`);
     };
 
     if (!session?.user?.id) return null;
     if (loading) return <div>Loading...</div>;
-    if (itineraries.length === 0) {
+    if (lists.length === 0) {
         return (
-            <button onClick={handleCreateItinerary} className="text-md text-zinc-700 hover:text-emerald-600 transition-colors text-right cursor-pointer" disabled={adding}>
-                Create new itinerary
+            <button onClick={handleCreatelist} className="text-md text-zinc-700 hover:text-emerald-600 transition-colors text-right cursor-pointer" disabled={adding}>
+                Create new list
                 <div className="text-sm text-zinc-400">Start planning</div>
             </button>
         );
     }
     return (
-        <div className="w-48">
+        <div className="w-62">
             <MultiSelectDropdown
-                options={itineraryOptions}
+                options={listOptions}
                 selected={selectedIds}
                 onChange={handleDropdownChange}
-                placeholder="Add to itinerary..."
-                onConfirm={handleAddToItineraries}
+                placeholder="Add to list..."
+                onConfirm={handleAddTolists}
                 onCancel={() => setDropdownKey(k => k + 1)}
                 confirmLabel={adding ? "Adding..." : "Add"}
                 cancelLabel="Cancel"
                 confirmDisabled={adding || selectedIds.length === 0}
                 key={dropdownKey}
+                variant="detailed"
             />
             {error && <div className="text-red-500 text-xs mt-1">{error}</div>}
             {success && <div className="text-emerald-600 text-xs mt-1">{success}</div>}

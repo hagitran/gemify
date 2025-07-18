@@ -4,8 +4,8 @@
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.itineraries": {
-      "name": "itineraries",
+    "public.lists": {
+      "name": "lists",
       "schema": "",
       "columns": {
         "id": {
@@ -15,7 +15,7 @@
           "notNull": true,
           "identity": {
             "type": "always",
-            "name": "itineraries_id_seq",
+            "name": "lists_id_seq",
             "schema": "public",
             "increment": "1",
             "startWith": "1",
@@ -53,9 +53,9 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "itineraries_created_by_user_id_fk": {
-          "name": "itineraries_created_by_user_id_fk",
-          "tableFrom": "itineraries",
+        "lists_created_by_user_id_fk": {
+          "name": "lists_created_by_user_id_fk",
+          "tableFrom": "lists",
           "tableTo": "user",
           "columnsFrom": [
             "created_by"
@@ -73,8 +73,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.itinerary_members": {
-      "name": "itinerary_members",
+    "public.list_members": {
+      "name": "list_members",
       "schema": "",
       "columns": {
         "id": {
@@ -84,7 +84,7 @@
           "notNull": true,
           "identity": {
             "type": "always",
-            "name": "itinerary_members_id_seq",
+            "name": "list_members_id_seq",
             "schema": "public",
             "increment": "1",
             "startWith": "1",
@@ -100,8 +100,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "itinerary_id": {
-          "name": "itinerary_id",
+        "list_id": {
+          "name": "list_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
@@ -109,9 +109,9 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "itinerary_members_user_id_user_id_fk": {
-          "name": "itinerary_members_user_id_user_id_fk",
-          "tableFrom": "itinerary_members",
+        "list_members_user_id_user_id_fk": {
+          "name": "list_members_user_id_user_id_fk",
+          "tableFrom": "list_members",
           "tableTo": "user",
           "columnsFrom": [
             "user_id"
@@ -122,12 +122,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "itinerary_members_itinerary_id_itineraries_id_fk": {
-          "name": "itinerary_members_itinerary_id_itineraries_id_fk",
-          "tableFrom": "itinerary_members",
-          "tableTo": "itineraries",
+        "list_members_list_id_lists_id_fk": {
+          "name": "list_members_list_id_lists_id_fk",
+          "tableFrom": "list_members",
+          "tableTo": "lists",
           "columnsFrom": [
-            "itinerary_id"
+            "list_id"
           ],
           "columnsTo": [
             "id"

@@ -22,26 +22,26 @@ interface Place {
     price?: number;
     display_name?: string;
 }
-export default async function ItineraryPage({ params }: { params: Params }) {
+export default async function listPage({ params }: { params: Params }) {
     const { id } = await params;
     const idNum = Number(id);
     if (isNaN(idNum)) return notFound();
 
-    // Fetch itinerary
-    const { data: itinerary, error: itineraryError } = await supabase
-        .from("itineraries")
+    // Fetch list
+    const { data: list, error: listError } = await supabase
+        .from("lists")
         .select("id, name, description, created_by, created_at")
         .eq("id", idNum)
         .single();
-    if (itineraryError || !itinerary) return notFound();
+    if (listError || !list) return notFound();
 
-    // Fetch all places in this itinerary
-    const { data: itineraryPlaces, error: placesError } = await supabase
-        .from("itinerary_places")
+    // Fetch all places in this list
+    const { data: listPlaces, error: placesError } = await supabase
+        .from("list_places")
         .select("place_id")
-        .eq("itinerary_id", idNum);
+        .eq("list_id", idNum);
     if (placesError) return notFound();
-    const placeIds: number[] = (itineraryPlaces || []).map((ip: any) => ip.place_id);
+    const placeIds: number[] = (listPlaces || []).map((ip: any) => ip.place_id);
 
     let places: Place[] = [];
     if (placeIds.length > 0) {
@@ -55,13 +55,13 @@ export default async function ItineraryPage({ params }: { params: Params }) {
     return (
         <div className="w-full flex flex-col items-center overflow-x-hidden px-0 gap-4 sm:gap-0">
             <div className="w-full max-w-2xl mx-auto p-6 flex flex-col gap-4">
-                <h1 className="text-3xl font-bold mb-2">{itinerary.name}</h1>
-                {itinerary.description && (
-                    <div className="text-zinc-600 mb-4">{itinerary.description}</div>
+                <h1 className="text-3xl font-bold mb-2">{list.name}</h1>
+                {list.description && (
+                    <div className="text-zinc-600 mb-4">{list.description}</div>
                 )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
                     {places.length === 0 ? (
-                        <div className="col-span-full text-zinc-400 text-center">No places in this itinerary yet.</div>
+                        <div className="col-span-full text-zinc-400 text-center">No places in this list yet.</div>
                     ) : (
                         places.map((place: Place) => (
                             <Link key={place.id} href={`/places/${place.id}`} className="block bg-white rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden">

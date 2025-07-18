@@ -106,26 +106,26 @@ export async function recordPlaceView({
   return { success: true };
 }
 
-export async function addPlaceToItinerary({
-  itinerary_id,
+export async function addPlaceTolist({
+  list_id,
   place_id,
 }: {
-  itinerary_id: number;
+  list_id: number;
   place_id: number;
 }) {
   // Check if already exists
   const { data: existing, error: checkError } = await supabase
-    .from("itinerary_places")
+    .from("list_places")
     .select("id")
-    .eq("itinerary_id", itinerary_id)
+    .eq("list_id", list_id)
     .eq("place_id", place_id)
     .maybeSingle();
   if (checkError) return { error: checkError };
-  if (existing) return { error: "Place already in itinerary." };
+  if (existing) return { error: "Place already in list." };
   // Insert
   const { error } = await supabase
-    .from("itinerary_places")
-    .insert([{ itinerary_id, place_id }]);
+    .from("list_places")
+    .insert([{ list_id, place_id }]);
   if (error) return { error };
   return { success: true };
 }

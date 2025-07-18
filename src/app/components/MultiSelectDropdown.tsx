@@ -71,9 +71,6 @@ export default function MultiSelectDropdown({
                 {selectedLabels.length > 0 ? selectedLabels.join(", ") : placeholder}
                 <svg className={`w-4 h-4 ml-2 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
             </button>
-            {variant === "detailed" && (
-                <div className="text-sm px-2 text-zinc-400">Share with friends</div>
-            )}
             {open && (
                 <div className="absolute z-10 mt-2 w-full bg-white border border-zinc-100 rounded max-h-60 overflow-y-auto">
                     {options.map(option => (
@@ -88,8 +85,8 @@ export default function MultiSelectDropdown({
                         </label>
                     ))}
                     {variant === "detailed" && (
-                        <div className="flex gap-2 justify-end px-4 pt-4">
-                            <div className="flex gap-4 p-2">
+                        <div className="flex justify-end px-2 pt-2">
+                            <div className="flex gap-6 p-2">
                                 <button
                                     className="flex text-zinc-700 py-1 rounded transition-colors font-medium cursor-pointer hover:text-emerald-900"
                                     onClick={() => { setOpen(false); if (onCancel) onCancel(); }}
@@ -98,7 +95,7 @@ export default function MultiSelectDropdown({
                                     {cancelLabel}
                                 </button>
                                 <button
-                                    className="flex text-emerald-600 py-1 rounded transition-colors font-medium cursor-pointer hover:text-emerald-800"
+                                    className="flex text-emerald-600 py-1 rounded transition-colors font-medium cursor-pointer hover:text-emerald-900"
                                     onClick={() => { if (onConfirm) onConfirm(); setOpen(false); }}
                                     disabled={confirmDisabled}
                                 >

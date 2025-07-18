@@ -104,7 +104,7 @@ export const userInteractionsTable = pgTable("user_interactions", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
-export const itinerariesTable = pgTable("itineraries", {
+export const listsTable = pgTable("lists", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   name: text("name").notNull(),
   description: text("description"),
@@ -114,22 +114,22 @@ export const itinerariesTable = pgTable("itineraries", {
   createdBy: text("created_by").references(() => user.id),
 });
 
-export const itineraryMembersTable = pgTable("itinerary_members", {
+export const listMembersTable = pgTable("list_members", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   userId: text("user_id")
     .notNull()
     .references(() => user.id),
-  itineraryId: integer("itinerary_id")
+  listId: integer("list_id")
     .notNull()
-    .references(() => itinerariesTable.id),
+    .references(() => listsTable.id),
 });
 
-// === Itinerary Places Table ===
-export const itineraryPlacesTable = pgTable("itinerary_places", {
+// === list Places Table ===
+export const listPlacesTable = pgTable("list_places", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  itineraryId: integer("itinerary_id")
+  listId: integer("list_id")
     .notNull()
-    .references(() => itinerariesTable.id),
+    .references(() => listsTable.id),
   placeId: integer("place_id")
     .notNull()
     .references(() => placesTable.id),
@@ -146,7 +146,7 @@ export type InsertUserPreference = typeof userPreferencesTable.$inferInsert;
 export type SelectUserPreference = typeof userPreferencesTable.$inferSelect;
 export type InsertUserInteraction = typeof userInteractionsTable.$inferInsert;
 export type SelectUserInteraction = typeof userInteractionsTable.$inferSelect;
-export type InsertItinerary = typeof itinerariesTable.$inferInsert;
-export type SelectItinerary = typeof itinerariesTable.$inferSelect;
-export type InsertItineraryMember = typeof itineraryMembersTable.$inferInsert;
-export type SelectItineraryMember = typeof itineraryMembersTable.$inferSelect;
+export type InsertList = typeof listsTable.$inferInsert;
+export type SelectList = typeof listsTable.$inferSelect;
+export type InsertListMember = typeof listMembersTable.$inferInsert;
+export type SelectListMember = typeof listMembersTable.$inferSelect;

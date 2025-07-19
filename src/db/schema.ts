@@ -34,6 +34,7 @@ export const placesTable = pgTable("places", {
   price: smallint("price").default(0),
   addedBy: text("added_by").references(() => user.id),
   ambiance: text("ambiance").array(),
+  verified: boolean("verified").default(false),
 });
 
 // === User Notes Table ===
@@ -112,6 +113,8 @@ export const listsTable = pgTable("lists", {
     .notNull()
     .defaultNow(),
   createdBy: text("created_by").references(() => user.id),
+  karma: smallint("karma").default(0),
+  verified: boolean("verified").default(false),
 });
 
 export const listMembersTable = pgTable("list_members", {

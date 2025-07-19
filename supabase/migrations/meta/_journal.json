@@ -8,6 +8,20 @@
       "when": 1752857885942,
       "tag": "0000_fair_cyclops",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1752908015464,
+      "tag": "0001_lovely_lady_bullseye",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1752910638049,
+      "tag": "0002_graceful_mockingbird",
+      "breakpoints": true
     }
   ]
 }

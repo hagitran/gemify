@@ -3,7 +3,7 @@ import Image from "next/image";
 import supabase from "@/supabaseClient";
 import Link from "next/link";
 import { addNote } from "../actions";
-import NotesSection from "./NotesSection";
+import ReviewSection from "./ReviewSection";
 import { revalidatePath } from "next/cache";
 import { deleteNote } from "../actions";
 import { recordPlaceView } from "../actions";
@@ -186,7 +186,7 @@ export default async function PlacePage({ params }: { params: Params }) {
                     </div>
 
                 </div>
-                <NotesSection
+                <ReviewSection
                     notes={notes}
                     place={place}
                     handleAddNote={handleAddNote}

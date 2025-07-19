@@ -46,17 +46,11 @@ export default function Home() {
   const cityCache = useRef<{ [key: string]: Place[] | null }>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  // Helper to map UI root to DB value
-  function mapRootToDb(root: string) {
-    return root === "All" ? null : root.toLowerCase();
-  }
-
   // Listen for cache invalidation events
   useEffect(() => {
     function handleInvalidate(e: Event) {
       const customEvent = e as CustomEvent<{ city: string }>;
-      const dbRoot = mapRootToDb(root);
-      const cacheKey = `${city}:${dbRoot ?? "all"}`;
+      const cacheKey = `${city}:${root ?? "all"}`;
       if (customEvent?.detail?.city) {
         // Invalidate all roots for this city
         Object.keys(cityCache.current).forEach(key => {
@@ -66,7 +60,7 @@ export default function Home() {
         cityCache.current = {};
       }
       // Optionally refetch if on that city/root
-      getRouteData(city, dbRoot).then(data => {
+      getRouteData(city, root).then(data => {
         cityCache.current[cacheKey] = data;
         setRouteData(data);
       });
@@ -76,15 +70,14 @@ export default function Home() {
   }, [city, root]);
 
   useEffect(() => {
-    const dbRoot = mapRootToDb(root);
-    const cacheKey = `${city}:${dbRoot ?? "all"}`;
+    const cacheKey = `${city}:${root ?? "all"}`;
 
     // If cache exists, show it immediately
     if (cityCache.current[cacheKey]) {
       setRouteData(cityCache.current[cacheKey]);
       setIsLoading(false); // No skeleton
       // Fetch in background to update cache/state if data might be stale
-      getRouteData(city, dbRoot).then(data => {
+      getRouteData(city, root).then(data => {
         cityCache.current[cacheKey] = data;
         setRouteData(data);
       });
@@ -92,7 +85,7 @@ export default function Home() {
       // No cache, show skeleton
       setIsLoading(true);
       setRouteData(null);
-      getRouteData(city, dbRoot).then(data => {
+      getRouteData(city, root).then(data => {
         cityCache.current[cacheKey] = data;
         setRouteData(data);
         setIsLoading(false);

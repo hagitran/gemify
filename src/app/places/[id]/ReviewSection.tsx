@@ -1,5 +1,5 @@
 "use client";
-import NoteForm from "./NoteForm";
+import ReviewForm from "./ReviewForm";
 import { useRef, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { authClient } from "../../lib/auth-client";
@@ -23,7 +23,7 @@ interface NotesSectionProps {
     place: { id: number; address?: string; display_name?: string };
 }
 
-export default function NotesSection({ notes, handleAddNote, handleDeleteNote, place }: NotesSectionProps) {
+export default function ReviewSection({ notes, handleAddNote, handleDeleteNote, place }: NotesSectionProps) {
     const [showAddress, setShowAddress] = useState(false);
     const [copied, setCopied] = useState(false);
     const [userReview, setUserReview] = useState<{ id: number } | null>(null);
@@ -136,13 +136,17 @@ export default function NotesSection({ notes, handleAddNote, handleDeleteNote, p
 
                 {userReview ? (
                     <div className="flex gap-8 items-center">
-                        <Link
-                            href={`/profiles/${session?.user?.name || session?.user?.id}`}
-                            className="px-4 py-2 text-md text-zinc-700 hover:text-emerald-600 transition-colors text-right cursor-pointer flex flex-col"
+                        <button
+                            type="button"
+                            className="px-4 py-2 text-md text-zinc-700 hover:text-emerald-600 transition-colors text-right cursor-pointer flex flex-col bg-transparent border-none outline-none"
+                            onClick={() => {
+                                noteInputRef.current?.focus();
+                                noteInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }}
                         >
                             Review Now
                             <div className="text-sm text-emerald-600">Ongoing</div>
-                        </Link>
+                        </button>
                         <button
                             className="px-3 py-2 text-md text-red-600 border border-red-200 rounded hover:bg-red-50 transition-colors text-right cursor-pointer disabled:opacity-50 flex items-center gap-2"
                             onClick={handleDiscardReview}
@@ -174,7 +178,7 @@ export default function NotesSection({ notes, handleAddNote, handleDeleteNote, p
                     <div className="text-zinc-400 block bottom-2 right-4 text-xs py-1 px-3">Map coming soon</div>
                 </div>
             )}
-            <h2 className="text-xl font-semibold">Notes</h2>
+            <h2 className="text-xl font-semibold">Reviews</h2>
             {optimisticNotes.length > 0 ? (
                 <ul className="flex flex-col gap-y-2 sm:gap-y-2">
                     {optimisticNotes.map((note) => {
@@ -203,9 +207,9 @@ export default function NotesSection({ notes, handleAddNote, handleDeleteNote, p
                     })}
                 </ul>
             ) : (
-                <div className="text-zinc-400">No notes yet.</div>
+                <div className="text-zinc-400">No reviews yet.</div>
             )}
-            <NoteForm onSubmit={optimisticAddNote} textareaRef={noteInputRef} imageUploadRef={imageUploadRef} />
+            <ReviewForm onSubmit={optimisticAddNote} textareaRef={noteInputRef} imageUploadRef={imageUploadRef} />
         </div>
     );
 }
@@ -279,10 +283,22 @@ function AddTolistButton({ placeId }: { placeId: number }) {
         }
         if (!anyError) {
             setSuccess("Added to selected lists! Redirecting...");
-            router.push(`/gemlists/${newlistId || numericSelected[0]}`);
+            router.push(`/lists/${newlistId || numericSelected[0]}`);
         }
         setAdding(false);
         setTimeout(() => { setSuccess(null); setError(null); }, 2000);
+
+        // Link the place to the new list
+        if (newlistId && placeId) {
+            const { error: linkError } = await supabase
+                .from("list_places")
+                .insert([{ list_id: newlistId, place_id: placeId }]);
+            if (linkError) {
+                setError("Failed to link place to new list");
+                setAdding(false);
+                return;
+            }
+        }
     };
 
     // Only allow one 'New list' at a time

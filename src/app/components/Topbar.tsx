@@ -28,9 +28,9 @@ export function Topbar() {
 
     return (
         <header
-            className={`sticky top-0 z-50 w-full bg-zinc-50 border-b border-zinc-200 px-2 sm:px-4 py-3 ${!isRootPage ? 'hidden sm:block' : ''}`}
+            className={`sticky top-0 z-50 w-full bg-zinc-50 border-b border-zinc-200 px-2 sm:px-8 py-3 ${!isRootPage ? 'hidden sm:block' : ''}`}
         >
-            <div className="max-w-7xl mx-auto flex items-center">
+            <div className="w-full justify-evenly flex items-center">
                 {/* Logo */}
                 <Link href="/" className="items-center gap-2 cursor-pointer hidden lg:flex">
                     <div className="flex flex-row items-end gap-2">
@@ -55,6 +55,13 @@ export function Topbar() {
 
                 {/* Right Section: hide on mobile, show on sm+ */}
                 <div className="gap-2 hidden sm:flex">
+                    <Link
+                        href="/lists"
+                        className="px-4 py-2 text-sm text-zinc-700 hover:text-emerald-600 transition-colors"
+                    >
+                        Explore lists
+                        <div className="text-xs text-zinc-400">Curated by you</div>
+                    </Link>
                     <Link
                         href="/add"
                         className="px-4 py-2 text-sm text-zinc-700 hover:text-emerald-600 transition-colors"

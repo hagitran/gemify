@@ -43,7 +43,7 @@ export default function OngoingReviewCard({ place, reviewId, onDiscard, onReview
     }
 
     return (
-        <div className="relative w-full max-w-full sm:max-w-2xl h-36 sm:h-36 bg-zinc-100 rounded-lg sm:rounded-2xl overflow-hidden shadow mb-4">
+        <div className="relative w-full h-36 bg-zinc-100 rounded-lg sm:rounded-2xl overflow-hidden shadow mb-4">
             <Link href={`/places/${place.id}`}>
                 {imageUrl ? (
                     <Image

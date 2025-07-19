@@ -2,13 +2,14 @@
 
 import supabase from "../supabaseClient";
 
-export async function getRouteData(city: string, root: string | null) {
+export async function getRouteData(city: string, root: string) {
+  console.log(JSON.stringify(city), root);
   let query = supabase
     .from("places")
     .select("*")
     .eq("city", city)
     .order("karma", { ascending: false });
-  if (root) {
+  if (root && root !== "All") {
     query = query.eq("type", root.toLowerCase());
   }
   const { data, error } = await query;

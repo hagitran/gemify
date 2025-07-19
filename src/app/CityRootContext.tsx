@@ -22,30 +22,57 @@ function getCookie(name: string) {
 
 export const CityRootProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [city, setCityState] = useState("sf");
-    const [root, setRoot] = useState("All");
+    const [root, setRootState] = useState("All");
 
-    // On mount, set city from cookie if exists, else from geolocation
+    const validCities = ["sf", "hcmc"];
+
+    const setCity = (newCity: string) => {
+        const cityStr = String(newCity ?? "").toLowerCase();
+        if (validCities.includes(cityStr)) {
+            setCityState(cityStr);
+            setCookie("preferredCity", cityStr);
+        } else {
+            setCityState("sf");
+            setCookie("preferredCity", "sf");
+        }
+    };
+
+    const validRoots = ["Food", "Cafe", "Experience", "All"];
+    const setRoot = (newRoot: string) => {
+        if (validRoots.includes(newRoot)) {
+            setRootState(newRoot);
+        } else {
+            setRootState("All");
+        }
+    };
+
     useEffect(() => {
         const cookieCity = getCookie('preferredCity');
-        if (cookieCity) {
-            setCityState(cookieCity);
+        if (typeof cookieCity === 'string' && validCities.includes(cookieCity.toLowerCase())) {
+            setCityState(cookieCity.toLowerCase());
         } else {
             fetch('/api/geo')
                 .then(res => res.json())
                 .then(data => {
-                    if (data.city) {
-                        setCityState(data.city);
-                        setCookie('preferredCity', data.city);
+                    let cityValue = data.city;
+                    if (typeof cityValue === 'object' && cityValue !== null) {
+                        cityValue = cityValue.code || cityValue.city || "sf";
                     }
+                    cityValue = String(cityValue).toLowerCase();
+                    if (validCities.includes(cityValue)) {
+                        setCityState(cityValue);
+                        setCookie('preferredCity', cityValue);
+                    } else {
+                        setCityState("sf");
+                        setCookie('preferredCity', "sf");
+                    }
+                })
+                .catch(() => {
+                    setCityState("sf");
+                    setCookie('preferredCity', "sf");
                 });
         }
     }, []);
-
-    // When user changes city, update cookie as well
-    const setCity = (newCity: string) => {
-        setCityState(newCity);
-        setCookie('preferredCity', newCity);
-    };
 
     return (
         <CityRootContext.Provider value={{ city, setCity, root, setRoot }}>

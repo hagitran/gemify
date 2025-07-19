@@ -1,0 +1,1 @@
+ALTER TABLE "lists" ADD COLUMN "karma" smallint DEFAULT 0;

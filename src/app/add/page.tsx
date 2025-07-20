@@ -593,7 +593,7 @@ export default function AddPlacePage() {
                                     <div className="flex flex-col">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
                                         <div className="flex items-center gap-2">
-                                            {[1, 2, 3].map((dollar) => (
+                                            {[1, 2, 3, 4, 5].map((dollar) => (
                                                 <button
                                                     type="button"
                                                     key={dollar}

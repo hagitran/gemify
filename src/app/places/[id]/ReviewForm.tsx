@@ -6,7 +6,7 @@ import supabase from "@/supabaseClient";
 import resizeImage from "@/utils/resizeImage";
 import MultiSelectDropdown from "@/app/components/MultiSelectDropdown";
 
-export default function ReviewForm({ onSubmit, className = "", textareaRef, imageUploadRef }: { onSubmit: (formData: FormData) => void, className?: string, textareaRef?: RefObject<HTMLTextAreaElement>, imageUploadRef?: RefObject<HTMLLabelElement> }) {
+export default function ReviewForm({ onSubmit, className = "", textareaRef, imageUploadRef, place }: { onSubmit: (formData: FormData) => void, className?: string, textareaRef?: RefObject<HTMLTextAreaElement>, imageUploadRef?: RefObject<HTMLLabelElement>, place?: any }) {
     const { data: session } = authClient.useSession();
     const internalRef = useRef<HTMLTextAreaElement>(null);
     const ref = textareaRef || internalRef;
@@ -22,6 +22,28 @@ export default function ReviewForm({ onSubmit, className = "", textareaRef, imag
     const [ambiance, setAmbiance] = useState("");
     const [liked, setLiked] = useState(false);
     const [worthIt, setWorthIt] = useState(false);
+    const [showStructured, setShowStructured] = useState(false);
+
+    // Concise helpers for price and ambiance labels
+    const priceOptions = [
+        { value: 1, label: "a good deal" },
+        { value: 2, label: "fairly priced" },
+        { value: 3, label: "pricey" },
+    ];
+    const getPriceLabel = (val: number | "") => priceOptions.find(o => o.value === val)?.label || "";
+
+    const ambianceOptions = [
+        { value: "cozy", label: "cozy" },
+        { value: "lively", label: "lively" },
+        { value: "work-friendly", label: "work-friendly" },
+        { value: "trendy", label: "trendy" },
+        { value: "traditional", label: "traditional" },
+        { value: "romantic", label: "romantic" },
+    ];
+    const getAmbianceLabels = (vals: string[]) => {
+        const labels = ambianceOptions.filter(o => vals.includes(o.value as string)).map(o => o.label);
+        return labels.length < 2 ? labels.join("") : labels.slice(0, -1).join(", ") + (labels.length > 1 ? " and " + labels[labels.length - 1] : "");
+    };
 
     async function handleSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -33,8 +55,13 @@ export default function ReviewForm({ onSubmit, className = "", textareaRef, imag
         if (session?.user?.id) formData.append("user_id", session.user.id);
         formData.append("tried", String(tried));
         formData.append("recommended_item", recommendedItem);
-        if (reviewPrice !== "") formData.append("price", String(reviewPrice));
-        formData.append("ambiance", ambiance);
+        if (uploadedImagePath) {
+            if (reviewPrice !== "") formData.append("price", String(reviewPrice));
+            formData.append("ambiance", ambiance);
+        } else {
+            formData.append("price", "");
+            formData.append("ambiance", "");
+        }
         formData.append("liked", String(liked));
         formData.append("worth_it", String(worthIt));
         onSubmit(formData);
@@ -72,7 +99,6 @@ export default function ReviewForm({ onSubmit, className = "", textareaRef, imag
                 contentType: 'image/jpeg',
                 upsert: true,
             });
-        console.log(uploadError, 'uploaderr', imageUrl)
         if (uploadError) {
             setImageUrl("");
             setUploadedImagePath("");
@@ -89,12 +115,66 @@ export default function ReviewForm({ onSubmit, className = "", textareaRef, imag
     return (
         <form onSubmit={handleSubmit} className={`flex flex-col w-full ${className}`}>
             <div className="flex flex-col">
+                {imageUrl &&
+                    <div className="flex flex-col w-full py-2">
+                        <span className="text-black text-sm font-medium cursor-pointer mt-2">
+                            Most users think {place.name} is {" "}
+                            <MultiSelectDropdown
+                                options={priceOptions}
+                                selected={reviewPrice ? [reviewPrice] : []}
+                                onChange={selected => setReviewPrice(selected[0] ? Number(selected[0]) : "")}
+                                placeholder={getPriceLabel(place.price)}
+                                buttonClassName="!inline-flex !items-center !justify-between !w-auto !min-w-0 !p-0 !border-none !bg-transparent !shadow-none !underline !underline-offset-2 !decoration-emerald-600 !font-medium !align-baseline !focus:outline-none !hover:bg-transparent !hover:underline"
+                                dropdownClassName="!inline-block !p-0 !m-0"
+                                variant="mini"
+                                singleSelect={true}
+                            />
+
+                            <MultiSelectDropdown
+                                options={ambianceOptions}
+                                selected={ambiance ? ambiance.split(" and ").map(s => s.trim()) : []}
+                                onChange={selected => setAmbiance((selected as string[]).join(" and "))}
+                                placeholder={getAmbianceLabels(place.ambiance || [])}
+                                buttonClassName="ml-2 !inline-flex !items-center !justify-between !w-auto !min-w-0 !p-0 !border-none !bg-transparent !shadow-none !underline !underline-offset-2 !decoration-emerald-600 !font-medium !align-baseline !focus:outline-none !hover:bg-transparent !hover:underline"
+                                dropdownClassName="!inline-block !p-0 !m-0"
+                                variant="mini"
+                            />
+                            <div className="flex gap-2 mt-1">
+                                <input
+                                    type="checkbox"
+                                    checked={liked}
+                                    required
+                                    onChange={e => setLiked(e.target.checked)}
+                                    className="align-middle"
+                                />
+                                <label className="inline-flex items-center gap-1 text-sm font-medium">
+                                    Agree?
+                                </label>
+                                <span className="text-sm text-zinc-400 font-normal">Disagree? Tell us what you think.</span>
+
+                            </div>
+                        </span>
+                    </div>}
+                {imageUrl && (
+                    <>
+                        <div className="relative w-48 h-48 self-start">
+                            <Image
+                                src={imageUrl}
+                                alt="Preview"
+                                fill
+                                className="object-cover rounded-lg bg-zinc-200"
+                            />
+                        </div>
+                        <span className="text-sm text-zinc-400 mt-1 mb-2">Added {imageUrl.slice(-13)}</span>
+
+                    </>
+                )}
                 <div className="relative w-full">
                     <textarea
                         ref={ref}
                         id="review-note"
                         name="note"
-                        placeholder="Add a review..."
+                        placeholder="Recommend a dish or share your thoughts :)"
                         className="p-2 bg-zinc-100 w-full rounded focus:outline-none focus:ring-2 text-md resize-none peer"
                         rows={2}
                         required
@@ -105,7 +185,7 @@ export default function ReviewForm({ onSubmit, className = "", textareaRef, imag
                 </div>
                 <label
                     htmlFor="review-image-upload"
-                    className="underline underline-offset-2 text-black hover:text-emerald-600 text-sm font-medium cursor-pointer"
+                    className="underline underline-offset-2 text-black hover:text-emerald-600 text-sm font-medium cursor-pointer mt-2 w-16 whitespace-nowrap"
                 >
                     {image ? "Change image" : "Add image"}
                 </label>
@@ -117,87 +197,17 @@ export default function ReviewForm({ onSubmit, className = "", textareaRef, imag
                     onChange={handleImageChange}
                     disabled={loading}
                 />
-                {/* Additional review fields, only show if imageUrl is present */}
-                {imageUrl && (
-                    <div className="flex flex-row gap-4 mt-4">
-                        <div className="relative w-48 h-48 shrink-0">
-                            <Image
-                                src={imageUrl}
-                                alt="Preview"
-                                fill
-                                className="object-cover rounded-2xl bg-zinc-200"
-                            />
-                        </div>
-                        <div className="flex flex-col w-full gap-2">
-                            <div className="flex flex-col">
-                                <label htmlFor="recommended-item" className="block text-sm font-medium text-gray-700 mb-1">Recommended Item</label>
-                                <input
-                                    id="recommended-item"
-                                    type="text"
-                                    value={recommendedItem}
-                                    onChange={e => setRecommendedItem(e.target.value)}
-                                    className="p-2 border border-zinc-300 w-full rounded-lg focus:outline-none focus:ring-2 text-md"
-                                />
-                            </div>
-                            <div className="flex flex-row gap-4">
-                                {/* Price input + worth it */}
-                                <div className="flex flex-col flex-1">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
-                                    <div className="flex items-center gap-2 py-2">
-                                        {[1, 2, 3, 4, 5].map((dollar) => (
-                                            <button
-                                                type="button"
-                                                key={dollar}
-                                                onClick={() => setReviewPrice(dollar)}
-                                                className={`text-3xl ${reviewPrice === dollar ? "text-emerald-600" : "text-zinc-400"}`}
-                                                aria-label={`Set price to ${dollar}`}
-                                            >
-                                                $
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <label className="flex items-center gap-2 text-sm">
-                                        <input type="checkbox" checked={worthIt} onChange={e => setWorthIt(e.target.checked)} />
-                                        Was it worth it?
-                                    </label>
-                                </div>
-                                {/* Ambiance input + did you like it */}
-                                <div className="flex flex-col flex-1 w-full">
-                                    <label htmlFor="ambiance" className="block text-sm font-medium text-gray-700 mb-1">Ambiance</label>
-                                    <div className="">
-                                        <MultiSelectDropdown
-                                            options={[
-                                                { value: "cozy", label: "Cozy" },
-                                                { value: "lively", label: "Lively" },
-                                                { value: "work-friendly", label: "Work-Friendly" },
-                                                { value: "trendy", label: "Trendy" },
-                                                { value: "traditional", label: "Traditional" },
-                                                { value: "romantic", label: "Romantic" },
-                                            ]}
-                                            selected={ambiance ? ambiance.split(",") : []}
-                                            onChange={selected => setAmbiance((selected as string[]).join(","))}
-                                            placeholder="Select ambiance..."
-                                        />
-                                    </div>
-                                    <label className="flex items-center gap-2 text-sm">
-                                        <input type="checkbox" checked={liked} onChange={e => setLiked(e.target.checked)} />
-                                        Did you like it?
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-            <div className="flex w-full justify-end">
-                <button
-                    type="submit"
-                    className="text-zinc-100 rounded-full hover:text-zinc-300 cursor-pointer font-medium text-sm transition-colors py-2 px-4 bg-black text-right"
-                    aria-label="Add Note"
-                    disabled={loading || !note.trim()}
-                >
-                    {loading ? "Adding..." : "Comment"}
-                </button>
+                <div className="flex w-full justify-end">
+                    <button
+                        type="submit"
+                        className="text-zinc-100 rounded-full hover:text-zinc-300 cursor-pointer font-medium text-sm transition-colors py-2 px-4 mt-4 bg-black text-right"
+                        aria-label="Add Note"
+                        disabled={loading || !note.trim()}
+                    >
+                        {loading ? "Adding..." : "Review"}
+                    </button>
+                </div>
+
             </div>
         </form>
     );

@@ -35,6 +35,7 @@ export const placesTable = pgTable("places", {
   addedBy: text("added_by").references(() => user.id),
   ambiance: text("ambiance").array(),
   verified: boolean("verified").default(false),
+  viewCount: smallint("view_count").default(0),
 });
 
 // === User Notes Table ===
@@ -62,13 +63,9 @@ export const userReviewsTable = pgTable("user_reviews", {
   price: smallint("price"),
   ambiance: text("ambiance"),
 
-  // View tracking
-  viewCount: smallint("view_count").default(0),
-  lastViewedAt: timestamp("last_viewed_at", { withTimezone: true }),
-
   // Feedback
-  liked: boolean("liked"),
-  note: text("note"), // lightweight comment (optional, longform still goes in user_notes)
+  note: text("note"),
+  imagePath: text("image_path"),
 });
 
 export const userPreferencesTable = pgTable("user_preferences", {

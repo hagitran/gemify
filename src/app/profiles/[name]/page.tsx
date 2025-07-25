@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getUserByName, getUserNotes, getUserReviews } from "../actions";
+import { getUserByName, getUserReviews } from "../actions";
 import Link from "next/link";
 import supabase from "@/supabaseClient";
 import OngoingReviewSectionClient from "./OngoingReviewSectionClient";
@@ -59,8 +59,11 @@ export default async function UserProfilePage({ params }: { params: Params }) {
     const user: User | null = await getUserByName(name);
     if (!user) return notFound();
 
-    const notes: UserNote[] = await getUserNotes(user.id);
-    const reviews: UserReview[] = await getUserReviews(user.id);
+    // const notes: UserNote[] = await getUserNotes(user.id); // Remove if fully migrated
+    const reviews: UserReview[] = (await getUserReviews(user.id)).map((r: any) => ({
+        ...r,
+        place: Array.isArray(r.place) ? r.place[0] : r.place
+    }));
 
     const ongoingReviews = reviews.filter(r => r.tried === false && r.place).map(r => ({
         id: r.id, place: {
@@ -95,22 +98,25 @@ export default async function UserProfilePage({ params }: { params: Params }) {
             {/* )} */}
             <div>
                 <h2 className="text-xl font-semibold mb-2">Notes</h2>
-                {notes && notes.length > 0 ? (
-                    <ul className="flex flex-col gap-2">
-                        {notes.map((note) => (
-                            <li key={note.id} className="bg-zinc-100 rounded p-3">
-                                <div className="text-zinc-700">{note.note}</div>
-                                {note.place && (
-                                    <Link href={`/places/${note.place.id}`} className="text-xs text-zinc-500 hover:text-black cursor-pointer duration-200 mt-1 flex items-center gap-2">
-                                        {note.place.name}
-                                    </Link>
-                                )}
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <div className="text-zinc-400">No notes yet.</div>
-                )}
+                {/* The original code had notes, but getUserNotes was removed. */}
+                {/* If notes are to be displayed, they need to be fetched or passed in. */}
+                {/* For now, commenting out the notes section as getUserNotes is removed. */}
+                {/* {notes && notes.length > 0 ? ( */}
+                {/*     <ul className="flex flex-col gap-2"> */}
+                {/*         {notes.map((note) => ( */}
+                {/*             <li key={note.id} className="bg-zinc-100 rounded p-3"> */}
+                {/*                 <div className="text-zinc-700">{note.note}</div> */}
+                {/*                 {note.place && ( */}
+                {/*                     <Link href={`/places/${note.place.id}`} className="text-xs text-zinc-500 hover:text-black cursor-pointer duration-200 mt-1 flex items-center gap-2"> */}
+                {/*                         {note.place.name} */}
+                {/*                     </Link> */}
+                {/*                 )} */}
+                {/*             </li> */}
+                {/*         ))} */}
+                {/*     </ul> */}
+                {/* ) : ( */}
+                <div className="text-zinc-400">No notes yet.</div>
+                {/* )} */}
             </div>
 
         </div>

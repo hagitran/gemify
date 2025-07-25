@@ -10,29 +10,55 @@ export async function getPlaceById(id: number) {
   return data;
 }
 
-export async function getUserNotesForPlace(placeId: number) {
-  // Join user_notes with user to get user name
+export async function getUserReviewsForPlace(placeId: number) {
   const { data, error } = await supabase
-    .from("user_notes")
-    .select("*, user:user_id(name)")
+    .from("user_reviews")
+    .select(
+      "id, note, user_id, image_path, user:user_id(name), tried, recommended_item, price, ambiance, place_id"
+    )
     .eq("place_id", placeId);
+  console.log(error, "popopop");
   if (error) throw error;
   return data;
 }
 
-export async function addNote({
+export async function addReview({
   place_id,
   user_id,
   note,
+  image_path,
+  tried = false,
+  recommended_item = null,
+  price = null,
+  ambiance = null,
 }: {
   place_id: number;
   user_id: string;
   note: string;
+  image_path?: string;
+  tried?: boolean;
+  recommended_item?: string | null;
+  price?: number | null;
+  ambiance?: string | null;
 }) {
   const { data, error } = await supabase
-    .from("user_notes")
-    .insert([{ place_id, user_id, note }])
-    .select();
+    .from("user_reviews")
+    .insert([
+      {
+        place_id,
+        user_id,
+        note,
+        image_path,
+        tried,
+        recommended_item,
+        price,
+        ambiance,
+      },
+    ])
+    .select(
+      "id, note, user_id, image_path, tried, recommended_item, price, ambiance, place_id"
+    );
+  console.log("weriofh", error);
   if (error) return { error };
   return data;
 }
@@ -58,8 +84,11 @@ export async function addUserReview({
   return data;
 }
 
-export async function deleteNote(noteId: number) {
-  const { error } = await supabase.from("user_notes").delete().eq("id", noteId);
+export async function deleteReview(reviewId: number) {
+  const { error } = await supabase
+    .from("user_reviews")
+    .delete()
+    .eq("id", reviewId);
   if (error) throw error;
   return true;
 }

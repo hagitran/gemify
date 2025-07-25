@@ -1,0 +1,1 @@
+ALTER TABLE "user_reviews" ADD COLUMN "image_path" text;

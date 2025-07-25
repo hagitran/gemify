@@ -1,0 +1,1 @@
+ALTER TABLE "user_reviews" DROP COLUMN "liked";

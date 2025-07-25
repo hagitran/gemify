@@ -49,16 +49,23 @@ export async function addPlace(place: {
     return { error };
   }
   const newPlace = Array.isArray(data) ? data[0] : data;
-  // Insert into user_notes if user and notes are present
   if (place.added_by && newPlace && newPlace.id && place.notes) {
-    const { error: notesError } = await supabase.from("user_notes").insert([
+    const { error: reviewError } = await supabase.from("user_reviews").insert([
       {
         user_id: place.added_by,
         place_id: newPlace.id,
         note: place.notes,
+        image_path: place.image_path || null,
+        ambiance: Array.isArray(place.ambiance)
+          ? place.ambiance.join(",")
+          : place.ambiance || null,
+        price: place.price ?? null,
+        tried: true,
+        recommended_item: null,
+        // view_count, last_viewed_at: let DB defaults handle these
       },
     ]);
-    if (notesError) return { error: notesError };
+    if (reviewError) return { error: reviewError };
   }
   return data;
 }

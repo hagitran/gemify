@@ -8,12 +8,16 @@ import supabase from "@/supabaseClient";
 import { addPlaceTolist } from "../actions";
 import { useRouter } from "next/navigation";
 import MultiSelectDropdown from "../../components/MultiSelectDropdown";
+import Image from "next/image";
 
 interface Note {
     id: number;
     note: string;
     user_id: string;
+    image_path: string;
     user?: { name: string };
+    price?: number;
+    ambiance?: string;
 }
 
 interface NotesSectionProps {
@@ -60,10 +64,21 @@ export default function ReviewSection({ notes, handleAddNote, handleDeleteNote, 
     // Optimistic add note handler
     const optimisticAddNote = (formData: FormData) => {
         const noteText = formData.get("note") as string;
+        const image_path = formData.get("image_path") as string;
+        const price = formData.get("price") as string | null;
+        const ambiance = formData.get("ambiance") as string | null;
         if (!noteText) return;
         const user_id = session?.user?.id || "anon";
         const user = session?.user ? { name: session.user.name } : undefined;
-        const tempNote: Note = { id: Date.now(), note: noteText, user_id, user };
+        const tempNote: Note = {
+            id: Date.now(),
+            note: noteText,
+            user_id,
+            user,
+            image_path,
+            price: price ? Number(price) : undefined,
+            ambiance: ambiance || undefined,
+        };
         setOptimisticNotes(prev => [...prev, tempNote]);
         try {
             handleAddNote(formData);
@@ -180,36 +195,102 @@ export default function ReviewSection({ notes, handleAddNote, handleDeleteNote, 
             )}
             <h2 className="text-xl font-semibold">Reviews</h2>
             {optimisticNotes.length > 0 ? (
-                <ul className="flex flex-col gap-y-2 sm:gap-y-2">
+                <ul className="flex flex-col gap-y-2 sm:gap-y-4">
                     {optimisticNotes.map((note) => {
                         const isOwnNote = session?.user?.id && note.user_id === session.user.id;
                         const username = note.user?.name || note.user_id;
                         const isAnon = username === 'anon';
-                        return (
-                            <li key={note.id} className="bg-zinc-100 rounded p-3 group relative items-center">
-                                <div className="text-zinc-700 flex-1">{note.note}</div>
-                                {isAnon ? (
-                                    <span className="text-xs text-zinc-500 mt-1">By anon</span>
-                                ) : (
-                                    <Link href={`/profiles/${note.user?.name}`} className="text-xs text-zinc-500 hover:text-black cursor-pointer duration-200 mt-1">By {username}</Link>
-                                )}
-                                {isOwnNote && (
-                                    <button
-                                        className="absolute cursor-pointer top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-100 text-red-600 rounded px-2 py-1 text-xs font-medium hover:bg-red-200"
-                                        onClick={() => handleDiscardNote(note.id)}
-                                        title="Delete note"
-                                    >
-                                        Discard
-                                    </button>
-                                )}
-                            </li>
-                        );
+                        // Price label helper
+                        const priceLabels: Record<number, string> = { 1: 'a good deal', 2: 'fairly priced', 3: 'pricey' };
+                        const priceTag = note.price ? priceLabels[note.price] || String(note.price) : null;
+                        // Ambiance tags helper
+                        const ambianceTags = note.ambiance ? note.ambiance.split(/,| and /).map((a: string) => a.trim()).filter(Boolean) : [];
+                        console.log(note.ambiance, 'ambiance')
+                        if (note.image_path) {
+                            // Row layout: image left, tags/text right
+                            return (
+                                <div key={note.id} className="flex flex-row gap-4 items-start rounded group relative mb-2">
+                                    <div className="relative w-32 h-32 flex-shrink-0">
+                                        <Image
+                                            src={note.image_path}
+                                            alt="Preview"
+                                            fill
+                                            className="object-cover rounded-lg bg-zinc-200"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col flex-1 min-w-0 relative gap-2">
+                                        <div className="flex flex-row gap-2 flex-wrap">
+                                            {priceTag && <span className="px-2 py-1 rounded bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-100">{priceTag}</span>}
+                                            {ambianceTags.map((tag: string, i: number) => (
+                                                <span key={i} className="px-2 py-1 rounded bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-100">{tag}</span>
+                                            ))}
+                                        </div>
+                                        <div className="text-zinc-700 flex-1 break-words">{note.note}</div>
+                                        <div className="flex flex-row gap-2 items-center">
+                                            {isAnon ? (
+                                                <span className="text-xs text-zinc-500">By anon</span>
+                                            ) : (
+                                                <Link href={`/profiles/${note.user?.name}`} className="text-xs text-zinc-500 hover:text-black cursor-pointer duration-200 mt-1">By {username}</Link>
+                                            )}
+                                        </div>
+                                        <button
+                                            className="flex w-max cursor-pointer duration-200 bg-zinc-100 text-zinc-700 border border-zinc-300 rounded px-2 py-1 text-xs font-medium hover:bg-emerald-50 hover:text-emerald-700 z-10 mr-2 shadow"
+                                            onClick={() => {/* bump logic here */ }}
+                                            title="Bump review"
+                                        >
+                                            Bump
+                                        </button>
+
+                                        {isOwnNote && (
+                                            <>
+                                                <button
+                                                    className="absolute cursor-pointer right-0 opacity-0 group-hover:opacity-100 transition-opacity text-black underline hover:text-red-600 rounded px-2 py-1 text-sm font-medium z-10"
+                                                    onClick={() => handleDiscardNote(note.id)}
+                                                    title="Delete note"
+                                                >
+                                                    Discard
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        } else {
+                            // No image: render as before
+                            return (
+                                <div key={note.id}>
+                                    <li className="bg-zinc-100 rounded p-3 group relative items-center mb-2">
+                                        <div className="flex flex-row gap-2 mb-1">
+                                            {priceTag && <span className="px-2 py-1 rounded bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-100">{priceTag}</span>}
+                                            {ambianceTags.map((tag: string, i: number) => (
+                                                <span key={i} className="px-2 py-1 rounded bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-100">{tag}</span>
+                                            ))}
+                                        </div>
+                                        <div className="text-zinc-700 flex-1">{note.note}</div>
+                                        {isAnon ? (
+                                            <span className="text-xs text-zinc-500 mt-1">By anon</span>
+                                        ) : (
+                                            <Link href={`/profiles/${note.user?.name}`} className="text-xs text-zinc-500 hover:text-black cursor-pointer duration-200 mt-1">By {username}</Link>
+                                        )}
+                                        {isOwnNote && (
+                                            <button
+                                                className="absolute cursor-pointer top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-100 text-red-600 rounded px-2 py-1 text-xs font-medium hover:bg-red-200"
+                                                onClick={() => handleDiscardNote(note.id)}
+                                                title="Delete note"
+                                            >
+                                                Discard
+                                            </button>
+                                        )}
+                                    </li>
+                                </div>
+                            );
+                        }
                     })}
                 </ul>
             ) : (
                 <div className="text-zinc-400">No reviews yet.</div>
             )}
-            <ReviewForm onSubmit={optimisticAddNote} textareaRef={noteInputRef} imageUploadRef={imageUploadRef} />
+            <ReviewForm onSubmit={optimisticAddNote} textareaRef={noteInputRef} imageUploadRef={imageUploadRef} place={place} />
         </div>
     );
 }

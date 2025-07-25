@@ -2,17 +2,22 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import supabase from "@/supabaseClient";
 import Link from "next/link";
-import { addNote } from "../actions";
+import { addReview, deleteReview, getUserReviewsForPlace } from "../actions";
 import ReviewSection from "./ReviewSection";
 import { revalidatePath } from "next/cache";
-import { deleteNote } from "../actions";
-import { recordPlaceView } from "../actions";
 
 interface Note {
     id: number;
     note: string;
     user_id: string;
+    image_path: string;
     user?: { name: string };
+    tried?: boolean;
+    recommended_item?: string;
+    price?: number;
+    ambiance?: string;
+    liked?: boolean;
+    place_id?: number;
 }
 
 interface Place {
@@ -30,9 +35,12 @@ interface Place {
     notes: string;
     added_by: string;
     description: string;
+    ambiance: string[];
     user: { name: string };
     match_score?: number;
     created_at?: string;
+    view_count?: number;
+    last_viewed_at?: string;
 }
 
 function getMatchBadge(score?: number) {
@@ -69,20 +77,25 @@ export default async function PlacePage({ params }: { params: Params }) {
             .eq("id", idNum)
             .single();
         place = placeData;
-        const { data: notesData } = await supabase
-            .from("user_notes")
-            .select("*, user:user_id(name)")
-            .eq("place_id", idNum);
-        notes = notesData || [];
-        // Fetch total view count and tried count for this place
-        const { data: reviewRows } = await supabase
-            .from("user_reviews")
-            .select("view_count, tried")
-            .eq("place_id", idNum);
-        if (reviewRows && Array.isArray(reviewRows)) {
-            viewCount = reviewRows.reduce((sum, row) => sum + (row.view_count || 0), 0);
-            // triedCount = reviewRows.filter(row => row.tried === true).length;
+        // Increment viewCount only (lastViewedAt removed)
+        if (place) {
+            await supabase
+                .from("places")
+                .update({
+                    view_count: (place.view_count || 0) + 1,
+                })
+                .eq("id", idNum);
         }
+        const { data: notesData } = await supabase
+            .from("user_reviews")
+            .select("id, note, user_id, image_path, user:user_id(name), tried, recommended_item, price, ambiance, place_id")
+            .eq("place_id", idNum);
+        notes = (notesData || []).map((n: any) => ({
+            ...n,
+            user: Array.isArray(n.user) ? n.user[0] : n.user
+        }));
+        // Fetch viewCount from place (already loaded above)
+        viewCount = place?.view_count || 0;
     } catch (e) {
         console.log(e)
         return notFound();
@@ -94,7 +107,7 @@ export default async function PlacePage({ params }: { params: Params }) {
     let user_id = "anon";
     // If you have a way to get the user id on the server, use it here
     // For now, default to anon for SSR
-    await recordPlaceView({ user_id, place_id: idNum });
+    // await recordPlaceView({ user_id, place_id: idNum }); // This line is removed as per the new_code
 
     const badge = getMatchBadge(place.match_score);
     const price = place.price ? '$'.repeat(place.price) : '';
@@ -105,13 +118,30 @@ export default async function PlacePage({ params }: { params: Params }) {
         "use server";
         const noteText = formData.get("note") as string;
         const user_id = formData.get("user_id") as string || "anon";
-        await addNote({ place_id: place!.id, user_id, note: noteText });
+        const image_path = formData.get("image_path") as string;
+        const ambiance = formData.get("ambiance") as string | null;
+        const price = formData.get("price") as string | null;
+        const tried = formData.get("tried") === "true";
+        const recommended_item = formData.get("recommended_item") as string | null;
+        console.log({ noteText, user_id, image_path, ambiance, price, tried, recommended_item, place_id: place!.id });
+        await addReview({
+            place_id: place!.id,
+            user_id,
+            note: noteText,
+            image_path,
+            ambiance: ambiance,
+            // || (place!.ambiance ? (Array.isArray(place!.ambiance) ? place!.ambiance.join(",") : place!.ambiance) : null),
+            price: Number(price),
+            // ? Number(price) : (place!.price ?? null),
+            tried,
+            recommended_item,
+        });
         revalidatePath(`/places/${place!.id}`);
     }
 
     async function handleDeleteNote(noteId: number) {
         "use server";
-        await deleteNote(noteId);
+        await deleteReview(noteId);
         revalidatePath(`/places/${place?.id}`);
     }
 
@@ -155,8 +185,19 @@ export default async function PlacePage({ params }: { params: Params }) {
                 </div>
             </div>
 
-            <div className="flex underline decoration-emerald-600 text-xl sm:text-lg px-4 text-center max-w-xl mb-4">
+
+            <div className="flex underline decoration-emerald-600 text-xl sm:text-lg px-4 text-center max-w-xl mb-4 flex-col">
                 You’ve [user preference] — this place is [contrast], but [hook]. Want to give it a spin?
+
+                {/* {
+                    place.ambiance && (
+                        place.ambiance.map((e: string) => (
+                            <div key={e}>
+                                Would you say {place.name} is [pretty] {e}?
+                            </div>
+                        ))
+                    )
+                } */}
             </div>
 
             {/* Details Section */}

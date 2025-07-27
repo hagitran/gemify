@@ -52,7 +52,7 @@ interface Note {
     user?: { name: string };
     tried?: boolean;
     recommended_item?: string;
-    price?: number;
+    price: number;
     ambiance?: string;
     liked?: boolean;
     place_id?: number;
@@ -146,6 +146,8 @@ export default async function PlacePage({ params }: { params: Params }) {
         const price = formData.get("price") as string | null;
         const tried = formData.get("tried") === "true";
         const recommended_item = formData.get("recommended_item") as string | null;
+
+        console.log(formData, 'formdata!!')
         console.log({ noteText, user_id, image_path, ambiance, price, tried, recommended_item, place_id: place!.id });
         await addReview({
             place_id: place!.id,

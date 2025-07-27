@@ -13,7 +13,7 @@ interface Note {
     user_id: string;
     image_path: string;
     user?: { name: string };
-    price?: number;
+    price: number;
     ambiance?: string;
     created_at?: string;
 }
@@ -75,13 +75,14 @@ export default function ReviewSection({ notes, handleAddNote, handleDeleteNote, 
             user_id,
             user,
             image_path,
-            price: price ? Number(price) : undefined,
+            price: Number(price || 0),
             ambiance: ambiance || undefined,
             created_at: new Date().toISOString(),
         };
         setOptimisticNotes(prev => [...prev, tempNote]);
         try {
             handleAddNote(formData);
+            console.log(formData, 'weoi')
         } catch {
             setOptimisticNotes(prev => prev.filter(n => n.id !== tempNote.id));
         } finally {

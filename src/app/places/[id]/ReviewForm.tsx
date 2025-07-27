@@ -30,7 +30,7 @@ export default function ReviewForm({ onSubmit, className = "", textareaRef, plac
     const [uploadedImagePath, setUploadedImagePath] = useState<string>("");
     const [tried, setTried] = useState(false);
     const [recommendedItem, setRecommendedItem] = useState("");
-    const [reviewPrice, setReviewPrice] = useState<number | "">("");
+    const [reviewPrice, setReviewPrice] = useState<number | "">(place?.price || "");
     const [ambiance, setAmbiance] = useState(place?.ambiance ? (Array.isArray(place.ambiance) ? place.ambiance.join(",") : place.ambiance) : "");
     const [liked, setLiked] = useState(false);
     const [worthIt, setWorthIt] = useState(false);
@@ -71,15 +71,11 @@ export default function ReviewForm({ onSubmit, className = "", textareaRef, plac
         if (session?.user?.id) formData.append("user_id", session.user.id);
         formData.append("tried", String(tried));
         formData.append("recommended_item", recommendedItem);
-        if (uploadedImagePath) {
-            if (reviewPrice !== "") formData.append("price", String(reviewPrice));
-            formData.append("ambiance", ambiance);
-        } else {
-            formData.append("price", place?.price ? String(place.price) : "");
-            formData.append("ambiance", place?.ambiance ? (Array.isArray(place.ambiance) ? place.ambiance.join(",") : place.ambiance) : "");
-        }
+        formData.append("ambiance", ambiance);
+        formData.append("price", reviewPrice !== "" ? String(reviewPrice) : (place?.price ? String(place.price) : ""));
         formData.append("liked", String(liked));
         formData.append("worth_it", String(worthIt));
+        console.log(ambiance, 'c ambiance')
         onSubmit(formData);
         setNote("");
         setImage(null);
@@ -178,22 +174,31 @@ export default function ReviewForm({ onSubmit, className = "", textareaRef, plac
                             dropdownClassName="!inline-block !p-0 !m-0"
                             variant="mini"
                         />
-                        <div className="flex gap-2 mt-1">
-                            <span className="text-sm text-zinc-400 font-normal">Disagree? Tell us what you think.</span>
+                        <label className="inline-flex items-center gap-1 text-sm font-normal text-zinc-400">
+                            Disagree? Select what you think above.
+                        </label>
+                        {/* {
+                            (
+                                ambiance.split(",").map(s => s.trim()).filter(Boolean).sort().join(",") ==
+                                (Array.isArray(place?.ambiance) ? place.ambiance.slice().sort().join(",") : "")
+                                || reviewPrice != place?.price
+                            ) &&
+                            <div className="flex gap-2 mt-1">
+                                <span className="text-sm text-zinc-400 font-normal">Disagree? Select what you think above.</span>
 
-                            <input
-                                type="checkbox"
-                                checked={liked}
-                                required
-                                onChange={e => setLiked(e.target.checked)}
-                                className="align-middle"
-                            />
+                                <input
+                                    type="checkbox"
+                                    checked={liked}
+                                    required
+                                    onChange={e => setLiked(e.target.checked)}
+                                    className="align-middle"
+                                />
 
-                            <label className="inline-flex items-center gap-1 text-sm font-medium">
-                                Agree?
-                            </label>
+                                <label className="inline-flex items-center gap-1 text-sm font-medium">
+                                    Agree?
+                                </label>
 
-                        </div>
+                            </div>} */}
                     </span>
                 </div>
                 {imageUrl && (

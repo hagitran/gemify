@@ -21,7 +21,7 @@ interface UserReview {
     image_path?: string | null;
     tried: boolean | null;
     recommended_item?: string | null;
-    price?: number | null;
+    price: number;
     ambiance?: string | null;
     user?: { name: string };
     place?: {
@@ -38,7 +38,7 @@ interface RawUserReview {
     image_path: string | null;
     tried: boolean | null;
     recommended_item: string | null;
-    price: number | null;
+    price: number;
     ambiance: string | null;
     place_id: number;
     place?: {
@@ -128,7 +128,7 @@ export default async function UserProfilePage({ params }: { params: Params }) {
                                             user_id: review.user_id,
                                             image_path: review.image_path || "",
                                             user: review.user,
-                                            price: review.price || undefined,
+                                            price: review.price,
                                             ambiance: review.ambiance || undefined
                                         }}
                                     />

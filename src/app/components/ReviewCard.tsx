@@ -9,7 +9,7 @@ interface Note {
     user_id: string;
     image_path: string;
     user?: { name: string };
-    price?: number;
+    price: number;
     ambiance?: string;
     created_at?: string;
 }
@@ -68,6 +68,9 @@ export default function ReviewCard({ note, onDelete }: ReviewCardProps) {
                     </span>
                 </Link>
                 <div className="flex flex-row gap-2 flex-wrap ml-8">
+                    <span className="px-2 py-1 rounded h-max bg-green-50 text-green-700 text-sm font-semibold border-blue-100">
+                        {'$'.repeat(note?.price)}
+                    </span>
                     {ambianceTags.map((tag: string, i: number) => (
                         <span key={i} className="px-2 py-1 rounded h-max bg-blue-50 text-blue-700 text-sm font-semibold border-blue-100">{tag}</span>
                     ))}

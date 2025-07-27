@@ -107,7 +107,7 @@ export default async function PlacePage({ params }: { params: Params }) {
         const { data: notesData } = await supabase
             .from("user_reviews")
             .select("id, note, user_id, image_path, user:user_id(name), tried, recommended_item, price, ambiance, place_id, created_at")
-            .eq("place_id", idNum);
+            .eq("place_id", idNum)
         notes = (notesData || []).map((n: RawNote) => ({
             id: n.id,
             note: n.note,
@@ -168,8 +168,6 @@ export default async function PlacePage({ params }: { params: Params }) {
         revalidatePath(`/places/${place?.id}`);
     }
 
-
-
     // Always use the original upload version for the place detail page
     let imageUrl = place.image_path;
     if (imageUrl && imageUrl.includes('/thumbnails/')) {
@@ -216,20 +214,9 @@ export default async function PlacePage({ params }: { params: Params }) {
             </div>
 
 
-            <div className="flex underline decoration-emerald-600 text-xl sm:text-lg px-4 text-center max-w-xl mb-4 flex-col">
+            {/* <div className="flex underline decoration-emerald-600 text-xl sm:text-lg px-4 text-center max-w-xl mb-4 flex-col">
                 You’ve [user preference] — this place is [contrast], but [hook]. Want to give it a spin?
-
-                {/* {
-                    place.ambiance && (
-                        place.ambiance.map((e: string) => (
-                            <div key={e}>
-                                Would you say {place.name} is [pretty] {e}?
-                            </div>
-                        ))
-                    )
-                } */}
-
-            </div>
+            </div> */}
 
             {/* Details Section */}
             <div className="flex flex-col w-full max-w-full sm:max-w-2xl p-4 sm:p-8 gap-8 sm:gap-0">

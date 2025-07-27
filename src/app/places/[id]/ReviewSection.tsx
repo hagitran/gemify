@@ -111,7 +111,7 @@ export default function ReviewSection({ notes, handleAddNote, handleDeleteNote, 
 
     const noteInputRef = useRef<HTMLTextAreaElement>(null);
     return (
-        <div className="flex flex-col gap-y-4 sm:gap-y-2">
+        <div className="flex flex-col gap-y-4 sm:gap-y-4">
             <div className="flex justify-end w-full gap-8">
                 <AddToListButton placeId={place.id} />
                 <ReviewActions
@@ -125,7 +125,7 @@ export default function ReviewSection({ notes, handleAddNote, handleDeleteNote, 
             {(() => {
                 const notesWithContent = optimisticNotes.filter(note => note.note);
                 return notesWithContent.length > 0 ? (
-                    <ul className="flex flex-col gap-y-2 sm:gap-y-6 ">
+                    <ul className="flex flex-col gap-y-2 sm:gap-y-6">
                         {notesWithContent.map((note) => (
                             <ReviewCard
                                 key={note.id}

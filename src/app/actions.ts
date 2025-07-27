@@ -8,7 +8,7 @@ export async function getRouteData(city: string, root: string) {
     .from("places")
     .select("*")
     .eq("city", city)
-    .order("karma", { ascending: false });
+    .order("view_count", { ascending: false });
   if (root && root !== "All") {
     query = query.eq("type", root.toLowerCase());
   }

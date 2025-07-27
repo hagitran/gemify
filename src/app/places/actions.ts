@@ -1,27 +1,5 @@
 import supabase from "@/supabaseClient";
 
-export async function getPlaceById(id: number) {
-  const { data, error } = await supabase
-    .from("places")
-    .select("*")
-    .eq("id", id)
-    .single();
-  if (error) throw error;
-  return data;
-}
-
-export async function getUserReviewsForPlace(placeId: number) {
-  const { data, error } = await supabase
-    .from("user_reviews")
-    .select(
-      "id, note, user_id, image_path, user:user_id(name), tried, recommended_item, price, ambiance, place_id, created_at"
-    )
-    .eq("place_id", placeId);
-  console.log(error, "popopop");
-  if (error) throw error;
-  return data;
-}
-
 export async function addReview({
   place_id,
   user_id,
@@ -91,48 +69,6 @@ export async function deleteReview(reviewId: number) {
     .eq("id", reviewId);
   if (error) throw error;
   return true;
-}
-
-export async function recordPlaceView({
-  user_id,
-  place_id,
-}: {
-  user_id: string;
-  place_id: number;
-}) {
-  // Try to fetch existing review
-  const { data, error } = await supabase
-    .from("user_reviews")
-    .select("id, view_count")
-    .eq("user_id", user_id)
-    .eq("place_id", place_id)
-    .maybeSingle();
-
-  if (!error && data) {
-    // Row exists, increment view_count and update last_viewed_at
-    const currentViewCount = data.view_count || 0;
-    const { error: updateError } = await supabase
-      .from("user_reviews")
-      .update({
-        view_count: currentViewCount + 1,
-        last_viewed_at: new Date().toISOString(),
-      })
-      .eq("id", data.id);
-    if (updateError) return { error: updateError };
-    return { success: true };
-  }
-
-  // If no row exists, insert a new one
-  const { error: insertError } = await supabase.from("user_reviews").insert([
-    {
-      user_id,
-      place_id,
-      view_count: 1,
-      last_viewed_at: new Date().toISOString(),
-    },
-  ]);
-  if (insertError) return { error: insertError };
-  return { success: true };
 }
 
 export async function addPlaceTolist({

@@ -145,15 +145,16 @@ export default function ReviewActions({ place, userReview, onUserReviewChange }:
                                 </p>
                             </div>
 
-                            {copied && (
-                                <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-2 rounded-lg text-sm font-medium">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    Copied to clipboard!
-                                </div>
-                            )}
-
+                            <div className="flex flex-col gap-4">
+                                {copied && (
+                                    <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-2 rounded-lg text-sm font-medium">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        Copied to clipboard!
+                                    </div>
+                                )}
+                            </div>
                             {/* <div className="text-zinc-400 text-xs mt-2">
                                 Map integration coming soon
                             </div> */}

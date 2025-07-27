@@ -7,7 +7,7 @@ export default async function resizeImage(
   return new Promise((resolve, reject) => {
     const img = new window.Image();
     img.onload = () => {
-      let { width, height } = img;
+      const { width, height } = img;
       let newWidth = width;
       let newHeight = height;
       if (width > maxWidth || height > maxHeight) {

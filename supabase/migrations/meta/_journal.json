@@ -43,6 +43,13 @@
       "when": 1753428755118,
       "tag": "0005_peaceful_zarda",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1753597645453,
+      "tag": "0006_massive_wiccan",
+      "breakpoints": true
     }
   ]
 }

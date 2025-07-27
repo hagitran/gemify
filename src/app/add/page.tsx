@@ -128,7 +128,7 @@ export default function AddPlacePage() {
             .then(data => {
                 if (data.city) setPreferredCity(data.city);
             });
-    }, []);
+    }, [setPreferredCity]);
 
     useEffect(() => {
         setPlaceData(prev => ({ ...prev, city: preferredCity }));
@@ -368,14 +368,7 @@ export default function AddPlacePage() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [ambianceDropdownOpen]);
 
-    function toggleAmbianceOption(option: string) {
-        setPlaceData(prev => {
-            const selected = prev.ambiance.includes(option)
-                ? prev.ambiance.filter(a => a !== option)
-                : [...prev.ambiance, option];
-            return { ...prev, ambiance: selected };
-        });
-    }
+
 
     // Debounced search effect
     useEffect(() => {
@@ -611,7 +604,7 @@ export default function AddPlacePage() {
                                         <label htmlFor="place-notes" className="block text-sm font-medium text-gray-700 mb-1">{(placeData.type == 'experience') ? "What would you do here?" : "What's your go to here?"}</label>
                                         <textarea
                                             id="place-notes"
-                                            placeholder="What would you do here? "
+                                            placeholder={`The best way to experience ${placeData.name} is...`}
                                             value={placeData.notes}
                                             onChange={(e) => setPlaceData(prev => ({ ...prev, notes: e.target.value }))}
                                             rows={2}

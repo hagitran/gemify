@@ -35,7 +35,7 @@ export function Topbar() {
                 <Link href="/" className="items-center gap-2 cursor-pointer hidden lg:flex">
                     <div className="flex flex-row items-end gap-2">
                         <h1 className="text-3xl font-bold tracking-tight">
-                            <strong className="text-emerald-600">Gem</strong>ify
+                            <strong className="text-md text-emerald-600">Gem</strong>ify
                         </h1>
                         <span className="text-md text-zinc-500 hidden sm:inline">discover hidden gems</span>
                     </div>
@@ -55,13 +55,13 @@ export function Topbar() {
 
                 {/* Right Section: hide on mobile, show on sm+ */}
                 <div className="gap-2 hidden sm:flex">
-                    <Link
+                    {/* <Link
                         href="/lists"
                         className="px-4 py-2 text-sm text-zinc-700 hover:text-emerald-600 transition-colors"
                     >
                         Explore lists
                         <div className="text-xs text-zinc-400">Curated by you</div>
-                    </Link>
+                    </Link> */}
                     <Link
                         href="/add"
                         className="px-4 py-2 text-sm text-zinc-700 hover:text-emerald-600 transition-colors"

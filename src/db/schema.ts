@@ -7,7 +7,6 @@ import {
   doublePrecision,
   integer,
   boolean,
-  real,
 } from "drizzle-orm/pg-core";
 
 // Import auth schema
@@ -66,6 +65,11 @@ export const userReviewsTable = pgTable("user_reviews", {
   // Feedback
   note: text("note"),
   imagePath: text("image_path"),
+
+  // Timestamps
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
 
 export const userPreferencesTable = pgTable("user_preferences", {

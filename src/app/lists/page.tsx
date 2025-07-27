@@ -4,6 +4,16 @@ import supabase from "@/supabaseClient";
 import Link from "next/link";
 import { SelectList } from "@/db/schema";
 
+interface RawList {
+    id: number;
+    name: string;
+    description: string | null;
+    created_by: string | null;
+    created_at: string;
+    karma: number | null;
+    verified: boolean | null;
+}
+
 export default function ListsPage() {
     const [lists, setLists] = useState<SelectList[]>([]);
     const [trendingLists, setTrendingLists] = useState<SelectList[]>([]);
@@ -15,7 +25,7 @@ export default function ListsPage() {
             .select("id, name, description, created_by, created_at, karma, verified")
             .order('created_at', { ascending: false })
             .then(({ data }) => {
-                const mapped = (data || []).map((l: any) => ({
+                const mapped = (data || []).map((l: RawList) => ({
                     id: l.id,
                     name: l.name,
                     description: l.description ?? null,

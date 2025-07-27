@@ -1,0 +1,1 @@
+ALTER TABLE "user_reviews" ADD COLUMN "created_at" timestamp with time zone DEFAULT now() NOT NULL;

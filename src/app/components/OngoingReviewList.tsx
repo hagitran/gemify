@@ -5,7 +5,7 @@ import supabase from "@/supabaseClient";
 import { useState } from "react";
 
 interface Place {
-    id: string;
+    id: number;
     name: string;
     city: string;
     type: string;

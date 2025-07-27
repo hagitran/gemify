@@ -5,7 +5,35 @@ import Link from "next/link";
 import { updateListName } from "../actions";
 import OngoingReviewCard from "@/app/components/OngoingReviewCard";
 
-export default function ListDetailClient({ initialList, places }: { initialList: any, places: any[] }) {
+interface List {
+    id: number;
+    name: string;
+    description: string | null;
+    user: { name: string } | { name: string }[];
+    created_at: string;
+}
+
+interface Place {
+    id: number;
+    name: string;
+    city: string;
+    type: string;
+    address: string;
+    image_path: string;
+    price: number;
+    lat?: number;
+    long?: number;
+    display_name?: string;
+    osm_id?: string;
+    notes: string;
+    added_by: string;
+    description: string;
+    ambiance?: string;
+    created_at?: string;
+    view_count?: number;
+}
+
+export default function ListDetailClient({ initialList, places }: { initialList: List, places: Place[] }) {
     const [list, setList] = useState(initialList);
     const [name, setName] = useState(initialList.name || "");
     const [nameChange, setNameChange] = useState("");
@@ -28,7 +56,7 @@ export default function ListDetailClient({ initialList, places }: { initialList:
             try {
                 await updateListName(list.id, newName);
                 setError(null);
-            } catch (e) {
+            } catch {
                 // Revert on error
                 setList({ ...list, name: prevName });
                 setName(prevName);
@@ -65,7 +93,7 @@ export default function ListDetailClient({ initialList, places }: { initialList:
             {list.description && <div className="text-zinc-500 mt-1">{list.description}</div>}
             <div>
                 This list was curated by{" "}
-                <Link href={`/profiles/${list?.user?.name}`} className="underline underline-offset-2 decoration-zinc-600">{list.user.name}</Link>
+                <Link href={`/profiles/${Array.isArray(list?.user) ? list.user[0]?.name : list?.user?.name}`} className="underline underline-offset-2 decoration-zinc-600">{Array.isArray(list?.user) ? list.user[0]?.name : list?.user?.name}</Link>
                 {" "} on {" "}
                 <span>
                     {list.created_at ? new Date(list.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : ''}.

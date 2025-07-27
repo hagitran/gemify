@@ -2,22 +2,23 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import supabase from "@/supabaseClient";
 import Link from "next/link";
-import { addReview, deleteReview, getUserReviewsForPlace } from "../actions";
+import { addReview, deleteReview } from "../actions";
 import ReviewSection from "./ReviewSection";
 import { revalidatePath } from "next/cache";
+import DeletePlaceButton from "./DeletePlaceButton";
 
-interface Note {
+interface RawNote {
     id: number;
     note: string;
     user_id: string;
     image_path: string;
-    user?: { name: string };
-    tried?: boolean;
-    recommended_item?: string;
-    price?: number;
-    ambiance?: string;
-    liked?: boolean;
-    place_id?: number;
+    user: { name: string } | { name: string }[];
+    tried: boolean;
+    recommended_item: string;
+    price: number;
+    ambiance: string;
+    place_id: number;
+    created_at: string;
 }
 
 interface Place {
@@ -43,6 +44,21 @@ interface Place {
     last_viewed_at?: string;
 }
 
+interface Note {
+    id: number;
+    note: string;
+    user_id: string;
+    image_path: string;
+    user?: { name: string };
+    tried?: boolean;
+    recommended_item?: string;
+    price?: number;
+    ambiance?: string;
+    liked?: boolean;
+    place_id?: number;
+    created_at?: string;
+}
+
 function getMatchBadge(score?: number) {
     if (typeof score !== 'number') return null;
     if (score >= 0.9) return { label: "Great Fit", color: "bg-emerald-600" };
@@ -64,6 +80,8 @@ export default async function PlacePage({ params }: { params: Params }) {
     const { id } = await params;
     const idNum = Number(id);
     if (isNaN(idNum)) return notFound();
+
+
 
     let place: Place | null = null;
     let notes: Note[] = [];
@@ -88,12 +106,21 @@ export default async function PlacePage({ params }: { params: Params }) {
         }
         const { data: notesData } = await supabase
             .from("user_reviews")
-            .select("id, note, user_id, image_path, user:user_id(name), tried, recommended_item, price, ambiance, place_id")
+            .select("id, note, user_id, image_path, user:user_id(name), tried, recommended_item, price, ambiance, place_id, created_at")
             .eq("place_id", idNum);
-        notes = (notesData || []).map((n: any) => ({
-            ...n,
-            user: Array.isArray(n.user) ? n.user[0] : n.user
-        }));
+        notes = (notesData || []).map((n: RawNote) => ({
+            id: n.id,
+            note: n.note,
+            user_id: n.user_id,
+            image_path: n.image_path,
+            user: Array.isArray(n.user) ? n.user[0] : n.user,
+            tried: n.tried,
+            recommended_item: n.recommended_item,
+            price: n.price,
+            ambiance: n.ambiance,
+            place_id: n.place_id,
+            created_at: n.created_at
+        })) as Note[];
         // Fetch viewCount from place (already loaded above)
         viewCount = place?.view_count || 0;
     } catch (e) {
@@ -103,11 +130,7 @@ export default async function PlacePage({ params }: { params: Params }) {
     if (!place) return notFound();
 
     // Record the view (server action)
-    // Try to get user_id from cookies (if SSR) or fallback to 'anon'
-    let user_id = "anon";
-    // If you have a way to get the user id on the server, use it here
-    // For now, default to anon for SSR
-    // await recordPlaceView({ user_id, place_id: idNum }); // This line is removed as per the new_code
+
 
     const badge = getMatchBadge(place.match_score);
     const price = place.price ? '$'.repeat(place.price) : '';
@@ -145,6 +168,8 @@ export default async function PlacePage({ params }: { params: Params }) {
         revalidatePath(`/places/${place?.id}`);
     }
 
+
+
     // Always use the original upload version for the place detail page
     let imageUrl = place.image_path;
     if (imageUrl && imageUrl.includes('/thumbnails/')) {
@@ -170,10 +195,13 @@ export default async function PlacePage({ params }: { params: Params }) {
                         No Image
                     </div>
                 )}
-                {/* Overlay for name and tags */}
+
                 <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/70 to-transparent p-4 sm:p-6 flex flex-col gap-3">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-                        <h1 className="text-3xl sm:text-3xl font-bold text-white drop-shadow">{place.name}</h1>
+                        <div className="flex gap-3">
+                            <h1 className="text-3xl sm:text-3xl font-bold text-white drop-shadow">{place.name}</h1>
+                            <DeletePlaceButton placeId={place.id} addedBy={place.added_by} />
+                        </div>
                         {badge && (
                             <span className={`ml-0 sm:ml-2 px-4 py-2 rounded-full text-base font-semibold text-white ${badge.color}`}>{badge.label}</span>
                         )}
@@ -181,6 +209,8 @@ export default async function PlacePage({ params }: { params: Params }) {
                     <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-1">
                         {type && <span className="bg-white/80 text-zinc-800 text-base font-medium rounded px-3 py-2">{type}</span>}
                         {price && <span className="bg-white/80 text-zinc-800 text-base font-medium rounded px-3 py-2">{price}</span>}
+
+
                     </div>
                 </div>
             </div>
@@ -198,6 +228,7 @@ export default async function PlacePage({ params }: { params: Params }) {
                         ))
                     )
                 } */}
+
             </div>
 
             {/* Details Section */}

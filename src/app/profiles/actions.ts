@@ -14,7 +14,7 @@ export async function getUserReviews(userId: string) {
   const { data, error } = await supabase
     .from("user_reviews")
     .select(
-      "id, note, user_id, image_path, tried, recommended_item, price, ambiance, liked, place_id, place:place_id(name, id, image_path)"
+      "id, note, user_id, image_path, tried, recommended_item, price, ambiance, place_id, place:place_id(name, id, image_path)"
     )
     .eq("user_id", userId);
   if (error) throw error;

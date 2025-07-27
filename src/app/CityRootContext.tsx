@@ -72,7 +72,7 @@ export const CityRootProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                     setCookie('preferredCity', "sf");
                 });
         }
-    }, []);
+    }, [validCities]);
 
     return (
         <CityRootContext.Provider value={{ city, setCity, root, setRoot }}>

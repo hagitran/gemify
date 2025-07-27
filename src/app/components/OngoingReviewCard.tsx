@@ -6,7 +6,7 @@ import { useState } from "react";
 
 interface OngoingReviewCardProps {
     place: {
-        id: string;
+        id: number;
         name: string;
         city: string;
         type: string;
@@ -82,7 +82,7 @@ export default function OngoingReviewCard({ place, reviewId, onDiscard, onReview
                 </button>
                 {reviewId && onDiscard && (
                     <button
-                        className="px-2 py-2 w-full text-xs font-medium text-red-600 bg-white rounded hover:opacity-90 duration-200 transition-colors text-right cursor-pointer disabled:opacity-50 flex items-center gap-2"
+                        className="px-2 py-2 w-full text-sm text-red-600 bg-white rounded hover:opacity-90 duration-200 transition-colors text-right cursor-pointer disabled:opacity-50 flex items-center gap-2"
                         onClick={handleDiscard}
                         disabled={discarding}
                     >

@@ -14,7 +14,7 @@ export async function getUserReviewsForPlace(placeId: number) {
   const { data, error } = await supabase
     .from("user_reviews")
     .select(
-      "id, note, user_id, image_path, user:user_id(name), tried, recommended_item, price, ambiance, place_id"
+      "id, note, user_id, image_path, user:user_id(name), tried, recommended_item, price, ambiance, place_id, created_at"
     )
     .eq("place_id", placeId);
   console.log(error, "popopop");
@@ -56,7 +56,7 @@ export async function addReview({
       },
     ])
     .select(
-      "id, note, user_id, image_path, tried, recommended_item, price, ambiance, place_id"
+      "id, note, user_id, image_path, tried, recommended_item, price, ambiance, place_id, created_at"
     );
   console.log("weriofh", error);
   if (error) return { error };

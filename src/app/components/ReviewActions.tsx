@@ -5,7 +5,7 @@ import supabase from "@/supabaseClient";
 import { addUserReview } from "../places/actions";
 
 interface ReviewActionsProps {
-    place: { id: number; address?: string; display_name?: string };
+    place: { id: number; address?: string; display_name?: string; added_by?: string };
     userReview: { id: number } | null;
     onUserReviewChange: () => void;
 }
@@ -31,6 +31,7 @@ export default function ReviewActions({ place, userReview, onUserReviewChange }:
 
     const handleTryNow = async () => {
         setShowAddress(true);
+
         const address = place.display_name || place.address || "";
         if (address) {
             await navigator.clipboard.writeText(address);
@@ -43,6 +44,24 @@ export default function ReviewActions({ place, userReview, onUserReviewChange }:
             });
             onUserReviewChange(); // Refetch after add
         }
+        const { data, error: fetchError } = await supabase
+            .from("user_reviews")
+            .select("view_count")
+            .eq("id", userReview?.id)
+            .single();
+
+        if (fetchError) {
+            // handle error
+            return;
+        }
+
+        const newViewCount = (data?.view_count || 0) + 1;
+
+        const { error } = await supabase
+            .from("user_reviews")
+            .update({ view_count: newViewCount })
+            .eq("id", userReview?.id);
+        console.log(error);
     };
 
     const handleCloseModal = () => {
@@ -85,18 +104,21 @@ export default function ReviewActions({ place, userReview, onUserReviewChange }:
                         }}
                     >
                         Copy address
-                        <div className="text-sm text-emerald-600">Ongoing review</div>
+                        <div className="text-sm text-emerald-600">Share your gem</div>
                     </button>
-                    <button
-                        className="px-3 py-2 text-md text-red-600 border border-red-200 rounded hover:bg-red-50 transition-colors text-right cursor-pointer disabled:opacity-50 flex items-center gap-2"
-                        onClick={handleDiscardReview}
-                        disabled={discarding}
-                    >
-                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                        {discarding ? 'Discarding...' : 'Discard'}
-                    </button>
+                    {/* Only show Discard if user is NOT the place owner */}
+                    {session?.user?.id !== place.added_by && (
+                        <button
+                            className="px-3 py-2 text-md text-red-600 border border-red-200 rounded hover:bg-red-50 transition-colors text-right cursor-pointer disabled:opacity-50 flex items-center gap-2"
+                            onClick={handleDiscardReview}
+                            disabled={discarding}
+                        >
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            {discarding ? 'Discarding...' : 'Discard'}
+                        </button>
+                    )}
                 </div>
             ) : (
                 <div

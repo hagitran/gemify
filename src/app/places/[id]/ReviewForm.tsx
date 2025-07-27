@@ -101,49 +101,55 @@ export default function ReviewForm({ onSubmit, className = "", textareaRef, plac
         if (!file) return;
         setImage(file);
 
-        // Resize to high-quality thumbnail (e.g., 700x700, JPEG, quality 0.92)
-        const resizedBlob = await resizeImage(file, 700, 700, 0.92);
+        try {
+            // Resize to high-quality thumbnail (e.g., 700x700, JPEG, quality 0.92)
+            const resizedBlob = await resizeImage(file, 700, 700, 0.92);
 
-        // Upload original file to /uploads/
-        const timestamp = Date.now();
-        const random = Math.random().toString(36).slice(2, 8);
-        const sanitizedFileName = file.name.replace(/\s+/g, '_');
-        const fileName = `${timestamp}_${random}_${sanitizedFileName}`;
-        const uploadPath = `uploads/${fileName}`;
-        const thumbnailPath = `thumbnails/${fileName}`;
+            // Generate unique file names
+            const timestamp = Date.now();
+            const random = Math.random().toString(36).slice(2, 8);
+            const sanitizedFileName = file.name.replace(/\s+/g, '_');
+            const fileName = `${timestamp}_${random}_${sanitizedFileName}`;
+            const uploadPath = `uploads/${fileName}`;
+            const thumbnailPath = `thumbnails/${fileName}`;
 
-        // Upload original file
-        const { error: uploadError } = await supabase.storage
-            .from('images')
-            .upload(uploadPath, file, {
-                contentType: file.type,
-                upsert: true,
-            });
+            // Upload original file
+            const { error: uploadError } = await supabase.storage
+                .from('images')
+                .upload(uploadPath, file, {
+                    contentType: file.type,
+                    upsert: true,
+                });
 
-        if (uploadError) {
+            if (uploadError) {
+                setImageUrl("");
+                setUploadedImagePath("");
+                throw new Error('Original upload error: ' + uploadError.message);
+            }
+
+            // Upload thumbnail (non-blocking)
+            try {
+                await supabase.storage
+                    .from('images')
+                    .upload(thumbnailPath, resizedBlob, {
+                        contentType: 'image/jpeg',
+                        upsert: true,
+                    });
+            } catch (thumbnailError) {
+                console.error('Thumbnail upload failed:', thumbnailError);
+            }
+
+            // Always use the original's public URL
+            const { data: urlData } = supabase.storage.from('images').getPublicUrl(uploadPath);
+            const publicUrl = urlData?.publicUrl || '';
+            setImageUrl(publicUrl);
+            setUploadedImagePath(publicUrl);
+            console.log(publicUrl, 'puburl');
+        } catch (error) {
+            console.error('Image upload error:', error);
             setImageUrl("");
             setUploadedImagePath("");
-            return;
         }
-
-        // Upload thumbnail
-        const { error: thumbnailError } = await supabase.storage
-            .from('images')
-            .upload(thumbnailPath, resizedBlob, {
-                contentType: 'image/jpeg',
-                upsert: true,
-            });
-
-        if (thumbnailError) {
-            console.error('Thumbnail upload failed:', thumbnailError);
-        }
-
-        // Get public URL for the original upload (store this in DB)
-        const { data: urlData } = supabase.storage.from('images').getPublicUrl(uploadPath);
-        const publicUrl = urlData?.publicUrl || '';
-        setImageUrl(publicUrl);
-        setUploadedImagePath(publicUrl);
-        console.log(publicUrl, 'puburl')
     }
 
     return (

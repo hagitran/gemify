@@ -128,7 +128,7 @@ export default function AddPlacePage() {
             .then(data => {
                 if (data.city) setPreferredCity(data.city);
             });
-    }, [setPreferredCity]);
+    }, []);
 
     useEffect(() => {
         setPlaceData(prev => ({ ...prev, city: preferredCity }));
@@ -368,8 +368,6 @@ export default function AddPlacePage() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [ambianceDropdownOpen]);
 
-
-
     // Debounced search effect
     useEffect(() => {
         if (!searchQuery.trim()) {
@@ -564,7 +562,7 @@ export default function AddPlacePage() {
                                         options={AMBIANCE_OPTIONS}
                                         selected={placeData.ambiance}
                                         onChange={(selected) => setPlaceData(prev => ({ ...prev, ambiance: selected as string[] }))}
-                                        placeholder="Select ambiance..."
+                                        placeholder="Whats the ambiance like?"
                                         buttonClassName=""
                                         dropdownClassName=""
                                     />

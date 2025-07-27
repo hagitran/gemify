@@ -4,6 +4,7 @@ import { emailOTP } from "better-auth/plugins";
 import { db, user, session, account, verification } from "../../db";
 
 export const auth = betterAuth({
+  trustedOrigins: ["https://www.gemify.me", "https://gemify.me"],
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {

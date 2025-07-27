@@ -6,7 +6,7 @@ export async function getUserByName(name: string) {
     .select("*")
     .eq("name", name)
     .single();
-  if (error) throw error;
+  if (error) console.log(error, "user error");
   return data;
 }
 

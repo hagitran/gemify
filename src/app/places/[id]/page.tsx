@@ -89,11 +89,12 @@ export default async function PlacePage({ params }: { params: Params }) {
     // let triedCount = 0;
     try {
 
-        const { data: placeData } = await supabase
+        const { data: placeData, error: placeError } = await supabase
             .from("places")
             .select("*, user:added_by(name)")
             .eq("id", idNum)
             .single();
+        console.log(placeError, 'placeerr')
         place = placeData;
         // Increment viewCount only (lastViewedAt removed)
         if (place) {

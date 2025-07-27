@@ -48,7 +48,7 @@ export default function ReviewActions({ place, userReview, onUserReviewChange }:
             .from("user_reviews")
             .select("view_count")
             .eq("id", userReview?.id)
-            .single();
+            .maybeSingle();
 
         if (fetchError) {
             // handle error

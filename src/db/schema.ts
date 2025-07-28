@@ -103,6 +103,7 @@ export const userInteractionsTable = pgTable("user_interactions", {
     .notNull()
     .references(() => placesTable.id),
   action: text("action"), // "liked", "saved", "dismissed", etc.
+  count: integer("count").default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 

@@ -1,0 +1,1 @@
+ALTER TABLE "user_interactions" ADD COLUMN "count" integer DEFAULT 0;

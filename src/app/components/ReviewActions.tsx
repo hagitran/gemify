@@ -31,37 +31,42 @@ export default function ReviewActions({ place, userReview, onUserReviewChange }:
 
     const handleTryNow = async () => {
         setShowAddress(true);
-
         const address = place.display_name || place.address || "";
         if (address) {
             await navigator.clipboard.writeText(address);
             setCopied(true);
         }
+
         if (session?.user?.id && place?.id) {
-            await addUserReview({
-                user_id: session.user.id,
-                place_id: place.id,
-            });
-            onUserReviewChange(); // Refetch after add
+            await addUserReview({ user_id: session.user.id, place_id: place.id });
+            onUserReviewChange();
+
+            // Log interaction
+            const { data: existing } = await supabase
+                .from("user_interactions")
+                .select("id, count")
+                .eq("user_id", session.user.id)
+                .eq("place_id", place.id)
+                .eq("action", "try")
+                .maybeSingle();
+
+            if (existing) {
+                await supabase.from("user_interactions").update({ count: existing.count + 1 }).eq("id", existing.id);
+            } else {
+                await supabase.from("user_interactions").insert({
+                    user_id: session.user.id,
+                    place_id: place.id,
+                    action: "try",
+                    count: 1
+                });
+            }
         }
-        const { data, error: fetchError } = await supabase
-            .from("user_reviews")
-            .select("view_count")
-            .eq("id", userReview?.id)
-            .maybeSingle();
 
-        if (fetchError) {
-            // handle error
-            return;
+        // Update view count
+        const { data } = await supabase.from("user_reviews").select("view_count").eq("id", userReview?.id).maybeSingle();
+        if (data) {
+            await supabase.from("user_reviews").update({ view_count: (data.view_count || 0) + 1 }).eq("id", userReview?.id);
         }
-
-        const newViewCount = (data?.view_count || 0) + 1;
-
-        const { error } = await supabase
-            .from("user_reviews")
-            .update({ view_count: newViewCount })
-            .eq("id", userReview?.id);
-        console.log(error);
     };
 
     const handleCloseModal = () => {

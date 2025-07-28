@@ -50,6 +50,13 @@
       "when": 1753597645453,
       "tag": "0006_massive_wiccan",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1753673234371,
+      "tag": "0007_conscious_network",
+      "breakpoints": true
     }
   ]
 }

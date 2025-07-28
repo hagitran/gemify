@@ -19,7 +19,7 @@ export function QuerySelector({ city, root, onCityChange, onRootChange }: QueryS
     };
 
     return (
-        <div className="flex flex-col rounded-xl shadow bg-white/80 px-4 py-2 items-center border border-zinc-200 w-full max-w-full">
+        <div className="flex flex-col rounded-xl shadow bg-white/80 px-4 py-2 items-center border border-zinc-200 w-full max-w-max">
             <div className="flex flex-row items-stretch gap-6 w-full rounded-md flex-wrap sm:flex-nowrap">
                 <div className="flex-1 flex flex-col min-h-0 max-w-full min-w-[220px] w-64">
                     <span className="text-md font-medium text-zinc-700 mb-1 group relative">
@@ -37,9 +37,9 @@ export function QuerySelector({ city, root, onCityChange, onRootChange }: QueryS
                         <option value="sf">San Francisco</option>
                     </select>
                 </div>
-                <div className="flex-1 flex flex-col min-h-0 w-full max-w-full">
+                <div className="flex-1 flex flex-col min-h-0 w-max">
                     <p className="text-md font-medium text-zinc-700 mb-1">What type?</p>
-                    <div className="flex items-center gap-4 flex-row ring-emerald-600 py-2 flex-wrap">
+                    <div className="flex items-center gap-4 flex-row ring-emerald-600 py-2 flex-nowrap">
                         {rootOptions.map((option) => (
                             <div key={option} className="flex items-center gap-1">
                                 <input

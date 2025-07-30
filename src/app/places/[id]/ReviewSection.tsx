@@ -6,31 +6,7 @@ import supabase from "@/supabaseClient";
 import ReviewCard from "../../components/ReviewCard";
 import AddToListButton from "../../components/AddToListButton";
 import ReviewActions from "../../components/ReviewActions";
-
-interface Note {
-    id: number;
-    note: string;
-    user_id: string;
-    image_path: string;
-    user?: { name: string };
-    price: number;
-    ambiance?: string;
-    created_at?: string;
-}
-
-interface NotesSectionProps {
-    notes: Note[];
-    handleAddNote: (formData: FormData) => void;
-    handleDeleteNote: (noteId: number) => void;
-    place: {
-        id: number;
-        name: string;
-        price: number;
-        ambiance: string[];
-        address?: string;
-        display_name?: string
-    };
-}
+import { Note, NotesSectionProps } from "../types";
 
 export default function ReviewSection({ notes, handleAddNote, handleDeleteNote, place }: NotesSectionProps) {
     const [userReview, setUserReview] = useState<{ id: number } | null>(null);

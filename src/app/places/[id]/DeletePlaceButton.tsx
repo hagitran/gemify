@@ -2,11 +2,7 @@
 import { authClient } from "../../lib/auth-client";
 import supabase from "@/supabaseClient";
 import { useRouter } from "next/navigation";
-
-interface DeletePlaceButtonProps {
-    placeId: number;
-    addedBy: string;
-}
+import { DeletePlaceButtonProps } from "../types";
 
 export default function DeletePlaceButton({ placeId, addedBy }: DeletePlaceButtonProps) {
     const { data: session } = authClient.useSession();

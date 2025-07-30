@@ -18,7 +18,6 @@ export async function getListWithUser(id: number | string) {
     .eq("id", id)
     .single();
 
-  console.log(id, data, "wefoih");
   if (error) throw error;
   return data;
 }

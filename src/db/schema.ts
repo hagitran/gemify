@@ -7,6 +7,7 @@ import {
   doublePrecision,
   integer,
   boolean,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 // Import auth schema
@@ -72,20 +73,20 @@ export const userReviewsTable = pgTable("user_reviews", {
     .defaultNow(),
 });
 
+// === User Preferences Table ===
 export const userPreferencesTable = pgTable("user_preferences", {
   userId: text("user_id")
     .primaryKey()
     .references(() => user.id),
-  engagementStyle: doublePrecision("engagement_style").notNull().default(0.5), // 0 = utilitarian, 1 = experiential
-  noveltySeeking: doublePrecision("novelty_seeking").notNull().default(0.5), // 0 = safe/familiar, 1 = adventurous
-  priceElasticity: doublePrecision("price_elasticity").notNull().default(0.5), // 0 = budget-first, 1 = free-spending
-  aestheticSensitivity: doublePrecision("aesthetic_sensitivity")
-    .notNull()
-    .default(0.5), // 0 = functional, 1 = design-first
-  healthConsciousness: doublePrecision("health_consciousness")
-    .notNull()
-    .default(0.5), // 0 = indulgence, 1 = health-first
-  socialMode: doublePrecision("social_mode").notNull().default(0.5), // 0 = solo, 1 = group-oriented
+
+  // Ambiance preferences (0 = dislike, 1 = like)
+  cozy: doublePrecision("cozy").notNull().default(0.5),
+  lively: doublePrecision("lively").notNull().default(0.5),
+  workFriendly: doublePrecision("work_friendly").notNull().default(0.5),
+  trendy: doublePrecision("trendy").notNull().default(0.5),
+  traditional: doublePrecision("traditional").notNull().default(0.5),
+  romantic: doublePrecision("romantic").notNull().default(0.5),
+  price1: doublePrecision("price").notNull().default(0.5), // $
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -93,19 +94,30 @@ export const userPreferencesTable = pgTable("user_preferences", {
     .notNull()
     .defaultNow(),
 });
+
 // === User Interactions Table (for short-term taste tracking) ===
-export const userInteractionsTable = pgTable("user_interactions", {
-  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id),
-  placeId: integer("place_id")
-    .notNull()
-    .references(() => placesTable.id),
-  action: text("action"), // "liked", "saved", "dismissed", etc.
-  count: integer("count").default(0),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
-});
+export const userInteractionsTable = pgTable(
+  "user_interactions",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id),
+    placeId: integer("place_id")
+      .notNull()
+      .references(() => placesTable.id),
+    action: text("action").notNull(), // "view", "try", "like", etc.
+    count: integer("count").default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => ({
+    uniqueTriplet: uniqueIndex("user_interactions_unique_triplet").on(
+      table.userId,
+      table.placeId,
+      table.action
+    ),
+  })
+);
 
 export const listsTable = pgTable("lists", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),

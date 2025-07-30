@@ -1,4 +1,9 @@
 import supabase from "@/supabaseClient";
+import {
+  AddReviewParams,
+  AddUserReviewParams,
+  AddPlaceToListParams,
+} from "./types";
 
 export async function addReview({
   place_id,
@@ -9,16 +14,7 @@ export async function addReview({
   recommended_item = null,
   price = null,
   ambiance = null,
-}: {
-  place_id: number;
-  user_id: string;
-  note: string;
-  image_path?: string;
-  tried?: boolean;
-  recommended_item?: string | null;
-  price?: number | null;
-  ambiance?: string | null;
-}) {
+}: AddReviewParams) {
   const { data, error } = await supabase
     .from("user_reviews")
     .insert([
@@ -44,10 +40,7 @@ export async function addReview({
 export async function addUserReview({
   user_id,
   place_id,
-}: {
-  user_id: string;
-  place_id: number;
-}) {
+}: AddUserReviewParams) {
   const { data, error } = await supabase.from("user_reviews").insert([
     {
       user_id,
@@ -74,10 +67,7 @@ export async function deleteReview(reviewId: number) {
 export async function addPlaceTolist({
   list_id,
   place_id,
-}: {
-  list_id: number;
-  place_id: number;
-}) {
+}: AddPlaceToListParams) {
   // Check if already exists
   const { data: existing, error: checkError } = await supabase
     .from("list_places")

@@ -5,18 +5,9 @@ import Image from "next/image";
 import supabase from "@/supabaseClient";
 import resizeImage from "@/utils/resizeImage";
 import MultiSelectDropdown from "@/app/components/MultiSelectDropdown";
+import { Option, PlaceFormData } from "../types";
 
-interface Option {
-    value: string | number;
-    label: string;
-}
-
-interface Place {
-    id: number;
-    name: string;
-    price: number;
-    ambiance: string[];
-}
+type Place = PlaceFormData;
 
 export default function ReviewForm({ onSubmit, className = "", textareaRef, place }: { onSubmit: (formData: FormData) => void, className?: string, textareaRef?: RefObject<HTMLTextAreaElement>, place?: Place }) {
     const { data: session } = authClient.useSession();
@@ -37,6 +28,7 @@ export default function ReviewForm({ onSubmit, className = "", textareaRef, plac
 
     // Concise helpers for price and ambiance labels
     const priceOptions = [
+        { value: 0, label: "free" },
         { value: 1, label: "a good deal" },
         { value: 2, label: "fairly priced" },
         { value: 3, label: "pricey" },

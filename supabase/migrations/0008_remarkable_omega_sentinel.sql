@@ -1,0 +1,2 @@
+ALTER TABLE "user_interactions" ALTER COLUMN "action" SET NOT NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "user_interactions_unique_triplet" ON "user_interactions" USING btree ("user_id","place_id","action");

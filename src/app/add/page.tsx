@@ -451,8 +451,8 @@ export default function AddPlacePage() {
                                 onBlur={() => setTimeout(() => setInputFocused(false), 100)}
                             />
                             {/* Recent queries dropdown */}
-                            {recentQueries.length > 0 && !searchQuery && (
-                                <div className="absolute mt-12 bg-white border border-zinc-200 rounded-lg max-h-48 overflow-y-auto z-10 shadow-lg">
+                            {(recentQueries.length > 0 && !searchQuery && inputFocused) && (
+                                <div className="absolute mt-16 bg-white border border-zinc-200 rounded-lg max-h-48 overflow-y-auto z-10 shadow-lg">
                                     {recentQueries.map((q) => (
                                         <button
                                             key={q}
@@ -472,7 +472,7 @@ export default function AddPlacePage() {
                                     </div>
                                 </div>
                             )}
-                            {(searchResults.length > 0 && inputFocused) && (
+                            {(searchResults.length > 0 && inputFocused && !selectedPlace) && (
                                 <div className="absolute top-full left-0 right-0 bg-white border border-zinc-200 rounded-xl mt-2 p-2 text-center max-h-56 z-10 overflow-y-auto text-zinc-500 shadow-lg">
                                     {/* <div className="absolute mt-12 bg-white border border-zinc-200 rounded-lg max-h-48 overflow-y-auto z-10 shadow-lg"> */}
                                     {searchResults.map((place, index) => (

@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "user_reviews_unique_user_place" ON "user_reviews" USING btree ("user_id","place_id");

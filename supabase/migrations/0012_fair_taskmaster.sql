@@ -1,0 +1,1 @@
+ALTER TABLE "lists" ADD COLUMN "place_count" smallint DEFAULT 0;

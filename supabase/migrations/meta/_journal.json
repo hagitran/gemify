@@ -78,6 +78,20 @@
       "when": 1753865917136,
       "tag": "0010_numerous_human_robot",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1753882024325,
+      "tag": "0011_free_tigra",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1753888036293,
+      "tag": "0012_fair_taskmaster",
+      "breakpoints": true
     }
   ]
 }

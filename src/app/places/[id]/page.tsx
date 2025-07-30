@@ -162,10 +162,6 @@ export default async function PlacePage({ params }: { params: Promise<{ id: stri
                     </div>
                 </div>
 
-
-                {/* <div className="flex underline decoration-emerald-600 text-xl sm:text-lg px-4 text-center max-w-xl mb-4 flex-col">
-                You’ve [user preference] — this place is [contrast], but [hook]. Want to give it a spin?
-            </div> */}
                 <PlacePersonalizationBanner place={place} />
 
                 {/* Details Section */}

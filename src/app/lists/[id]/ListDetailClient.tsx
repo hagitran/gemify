@@ -4,36 +4,15 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import { updateListName } from "../actions";
 import OngoingReviewCard from "@/app/components/OngoingReviewCard";
+import { Place, List } from "../types";
 
-interface List {
-    id: number;
-    name: string;
-    description: string | null;
-    user: { name: string } | { name: string }[];
-    created_at: string;
-}
-
-interface Place {
-    id: number;
-    name: string;
-    city: string;
-    type: string;
-    address: string;
-    image_path: string;
-    price: number;
-    lat?: number;
-    long?: number;
-    display_name?: string;
-    osm_id?: string;
-    notes: string;
-    added_by: string;
-    description: string;
-    ambiance?: string;
-    created_at?: string;
-    view_count?: number;
-}
-
-export default function ListDetailClient({ initialList, places }: { initialList: List, places: Place[] }) {
+export default function ListDetailClient({
+    initialList,
+    places
+}: {
+    initialList: List,
+    places: Place[]
+}) {
     const [list, setList] = useState(initialList);
     const [name, setName] = useState(initialList.name || "");
     const [nameChange, setNameChange] = useState("");
@@ -48,7 +27,6 @@ export default function ListDetailClient({ initialList, places }: { initialList:
             setNameChange("");
         }
         if (list && newName !== list.name) {
-            // Optimistically update
             const prevName = list.name;
             setList({ ...list, name: newName });
             setName(newName);
@@ -57,13 +35,14 @@ export default function ListDetailClient({ initialList, places }: { initialList:
                 await updateListName(list.id, newName);
                 setError(null);
             } catch {
-                // Revert on error
                 setList({ ...list, name: prevName });
                 setName(prevName);
                 setError("Failed to update name.");
             }
         }
     };
+
+    const userName = list?.createdBy;
 
     return (
         <div className="flex flex-col w-1/2 mx-auto p-12">
@@ -75,7 +54,7 @@ export default function ListDetailClient({ initialList, places }: { initialList:
                     onChange={name === "New list" ? e => setNameChange(e.target.value) : e => setName(e.target.value)}
                     onBlur={handleNameBlur}
                     placeholder="New list"
-                    className={`min-w-48 text-3xl font-semibold flex-grow overflow-hidden whitespace-nowrap text-ellipsis focus:outline-none focus:underline decoration-emerald-600 ${(name === "New list" && !nameChange) ? "text-zinc-500" : "text-black"}`}
+                    className={`min-w-48 text-3xl underline underline-offset-2 font-semibold flex-grow overflow-hidden whitespace-nowrap text-ellipsis focus:outline-none focus:underline decoration-emerald-600 ${(name === "New list" && !nameChange) ? "text-zinc-500" : "text-black"}`}
                     style={{ maxWidth: 'calc(100% - 48px)' }}
                 />
                 <button
@@ -90,10 +69,9 @@ export default function ListDetailClient({ initialList, places }: { initialList:
                 </button>
             </div>
             {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
-            {list.description && <div className="text-zinc-500 mt-1">{list.description}</div>}
             <div>
                 This list was curated by{" "}
-                <Link href={`/profiles/${Array.isArray(list?.user) ? list.user[0]?.name : list?.user?.name}`} className="underline underline-offset-2 decoration-zinc-600">{Array.isArray(list?.user) ? list.user[0]?.name : list?.user?.name}</Link>
+                <Link href={`/profiles/${userName}`} className="underline underline-offset-2 decoration-zinc-600">{userName}</Link>
                 {" "} on {" "}
                 <span>
                     {list.created_at ? new Date(list.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : ''}.
@@ -105,8 +83,24 @@ export default function ListDetailClient({ initialList, places }: { initialList:
                 ) : (
                     <ul className="flex flex-col gap-4">
                         {places.map((place) => (
-                            <li key={place.id}>
-                                <OngoingReviewCard place={place} />
+                            <li key={place.id} className="flex flex-row gap-4">
+                                <OngoingReviewCard
+                                    place={{
+                                        id: place.id,
+                                        name: place.name || '',
+                                        city: place.city || '',
+                                        type: place.type || '',
+                                        image_path: place.image_path || '',
+                                        price: place.price || 0,
+                                        lat: place.lat || undefined,
+                                        long: place.long || undefined,
+                                        display_name: place.displayName || undefined,
+                                        osm_id: place.osmId || undefined,
+                                        added_by: place.addedBy || '',
+                                        ambiance: place.ambiance?.[0] || undefined,
+                                    }}
+                                    variant="default"
+                                />
                             </li>
                         ))}
                     </ul>

@@ -50,28 +50,37 @@ export const userNotesTable = pgTable("user_notes", {
 });
 
 // === User Reviews Table ===
-export const userReviewsTable = pgTable("user_reviews", {
-  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  userId: text("user_id").references(() => user.id),
-  placeId: bigint("place_id", { mode: "number" })
-    .notNull()
-    .references(() => placesTable.id),
+export const userReviewsTable = pgTable(
+  "user_reviews",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    userId: text("user_id").references(() => user.id),
+    placeId: bigint("place_id", { mode: "number" })
+      .notNull()
+      .references(() => placesTable.id),
 
-  // Interaction-specific
-  tried: boolean("tried").default(false),
-  recommendedItem: text("recommended_item"),
-  price: smallint("price"),
-  ambiance: text("ambiance"),
+    // Interaction-specific
+    tried: boolean("tried").default(false),
+    recommendedItem: text("recommended_item"),
+    price: smallint("price"),
+    ambiance: text("ambiance"),
 
-  // Feedback
-  note: text("note"),
-  imagePath: text("image_path"),
+    // Feedback
+    note: text("note"),
+    imagePath: text("image_path"),
 
-  // Timestamps
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+    // Timestamps
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    uniqueUserPlace: uniqueIndex("user_reviews_unique_user_place").on(
+      table.userId,
+      table.placeId
+    ),
+  })
+);
 
 // === User Preferences Table ===
 export const userPreferencesTable = pgTable("user_preferences", {
@@ -129,6 +138,7 @@ export const listsTable = pgTable("lists", {
   createdBy: text("created_by").references(() => user.id),
   karma: smallint("karma").default(0),
   verified: boolean("verified").default(false),
+  placeCount: smallint("place_count").default(0),
 });
 
 export const listMembersTable = pgTable("list_members", {

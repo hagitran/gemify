@@ -47,25 +47,31 @@ function ListCard({ list }: { list: List }) {
 
     return (
         <li key={list.id} className="rounded py-4 bg-white">
-            <div className="flex gap-1 mt-2">
-                <Link href={`/profiles/${list.createdBy}`} className="w-12 h-12 mr-2 rounded-full bg-zinc-200 flex items-center justify-center text-lg font-bold text-zinc-500">
-                    {list.createdBy?.[0]?.toUpperCase() || 'A'}
-                </Link>
-                <Link href={`/profiles/${list.createdBy}`} className="flex flex-col">
-                    <span className="font-semibold text-black text-lg hover:text-emerald-600 duration-200">{list.createdBy || 'Anonymous'}</span>
-                    <span className="text-sm text-zinc-500">{formatTimeAgo(list.created_at)}</span>
-                </Link>
-
-                <span className="flex flex-col text-lg font-medium">curated
-                    <span className="text-sm text-zinc-500 font-normal">{list.place_count ? list.place_count : "many"} places</span>
-                </span>
-
-                <Link href={`/lists/${list.id}`} className="font-semibold underline underline-offset-2 decoration-emerald-600 text-lg">
-                    {" " + list.name}
-                </Link>
+            <div className="flex flex-col gap-1 mt-2">
+                <div className="flex items-center gap-2">
+                    <Link href={`/profiles/${list.createdBy}`} className="w-12 h-12 rounded-full bg-zinc-200 flex items-center justify-center text-lg font-bold text-zinc-500">
+                        {list.createdBy?.[0]?.toUpperCase() || 'A'}
+                    </Link>
+                    <div className="flex flex-col">
+                        <div className="flex items-center gap-2">
+                            <Link href={`/profiles/${list.createdBy}`} className="font-semibold text-black text-lg hover:text-emerald-600 duration-200">
+                                {list.createdBy || 'Anonymous'}
+                            </Link>
+                            <span className="text-lg font-medium">curated</span>
+                            <Link href={`/lists/${list.id}`} className="font-semibold underline underline-offset-2 decoration-emerald-600 text-lg">
+                                {list.name}
+                            </Link>
+                        </div>
+                        <div className="text-sm text-zinc-500 flex gap-4">
+                            <span>{formatTimeAgo(list.created_at)}</span>
+                            <span>{list.place_count ? list.place_count + " places" : "no places yet"}</span>
+                            <span>{list.karma} views</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div className="mt-4">
+            <div className="mt-4 py-4">
                 {loading ? (
                     <div className="text-zinc-400 text-sm">Loading places...</div>
                 ) : places.length === 0 ? (
@@ -136,7 +142,7 @@ export default function ListsPage() {
 
     return (
         <div className="w-3/4 mx-auto p-6">
-            <div className="flex flex-row gap-8">
+            <div className="flex flex-row gap-16">
                 <div className="flex-1">
                     <h1 className="text-3xl font-bold mb-6">New Lists</h1>
                     {lists.length === 0 ? (

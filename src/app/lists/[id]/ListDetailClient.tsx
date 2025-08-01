@@ -114,13 +114,18 @@ export default function ListDetailClient({
             </div>
             {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
             <div className="flex justify-between items-center">
-                <div>
-                    This list was curated by{" "}
-                    <Link href={`/profiles/${userName}`} className="underline underline-offset-2 decoration-zinc-600">{userName}</Link>
-                    {" "} on {" "}
-                    <span>
-                        {list.created_at ? new Date(list.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : ''}.
-                    </span>
+                <div className="flex items-center gap-4">
+                    <div>
+                        This list was curated by{" "}
+                        <Link href={`/profiles/${userName}`} className="underline underline-offset-2 decoration-zinc-600">{userName}</Link>
+                        {" "} on {" "}
+                        <span>
+                            {list.created_at ? new Date(list.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : ''}.
+                        </span>
+                    </div>
+                    <div className="text-sm text-zinc-500">
+                        {list.karma} views
+                    </div>
                 </div>
                 <DeleteListButton listId={list.id} createdBy={list.createdBy || ''} />
             </div>

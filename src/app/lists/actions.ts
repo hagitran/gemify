@@ -53,12 +53,18 @@ export async function getListWithUser(id: number | string): Promise<List> {
 
   const listData = data as RawListData;
 
+  // Update view count (karma)
+  await supabase
+    .from("lists")
+    .update({ karma: (listData.karma ?? 0) + 1 })
+    .eq("id", id);
+
   return {
     id: listData.id,
     name: listData.name,
     description: listData.description,
     created_at: listData.created_at,
-    karma: listData.karma ?? 0,
+    karma: (listData.karma ?? 0) + 1, // Return updated count
     verified: listData.verified ?? null,
     place_count: listData.place_count ?? 0,
     createdBy: Array.isArray(listData.created_by)

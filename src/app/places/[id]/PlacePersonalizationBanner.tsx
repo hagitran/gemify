@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { authClient } from "@/app/lib/auth-client";
 import supabase from "@/supabaseClient";
 import { PlacePersonalizationBannerProps } from "../types";
+import Link from "next/link";
 
 interface ExtendedProps extends PlacePersonalizationBannerProps {
     type?: 'default' | 'list';
@@ -106,7 +107,10 @@ export default function PlacePersonalizationBanner({ place, type = 'default' }: 
 
     return (
         <div className={`flex underline decoration-emerald-600 px-4 text-center max-w-xl flex-col ${type === 'list' ? 'text-md py-4 border border-zinc-200 rounded-xl' : 'text-xl sm:text-lg mb-4'}`}>
-            {message}
+            {message === "Personalizing..." ?
+                <Link href="/login">Sign up to see which gems we'd recommend.</Link>
+                : message
+            }
         </div>
     );
 }

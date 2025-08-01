@@ -152,15 +152,24 @@ export const listMembersTable = pgTable("list_members", {
 });
 
 // === list Places Table ===
-export const listPlacesTable = pgTable("list_places", {
-  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  listId: integer("list_id")
-    .notNull()
-    .references(() => listsTable.id),
-  placeId: integer("place_id")
-    .notNull()
-    .references(() => placesTable.id),
-});
+export const listPlacesTable = pgTable(
+  "list_places",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    listId: integer("list_id")
+      .notNull()
+      .references(() => listsTable.id),
+    placeId: integer("place_id")
+      .notNull()
+      .references(() => placesTable.id),
+  },
+  (table) => ({
+    uniqueListPlace: uniqueIndex("unique_list_place").on(
+      table.listId,
+      table.placeId
+    ),
+  })
+);
 
 // === Types ===
 export type InsertPlace = typeof placesTable.$inferInsert;

@@ -20,16 +20,29 @@ function ListCard({ list }: { list: List }) {
     const [places, setPlaces] = useState<Place[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const refreshPlaces = async () => {
+        try {
+            const data = await getListPlaces(list.id);
+            setPlaces(data);
+        } catch (error) {
+            console.error('Failed to load places for list:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        getListPlaces(list.id)
-            .then((data) => {
-                setPlaces(data);
-                setLoading(false);
-            })
-            .catch((error) => {
-                console.error('Failed to load places for list:', error);
-                setLoading(false);
-            });
+        refreshPlaces();
+    }, [list.id]);
+
+    // Listen for list updates
+    useEffect(() => {
+        const handleListUpdate = () => {
+            refreshPlaces();
+        };
+
+        window.addEventListener('listUpdated', handleListUpdate);
+        return () => window.removeEventListener('listUpdated', handleListUpdate);
     }, [list.id]);
 
     return (
@@ -93,17 +106,30 @@ export default function ListsPage() {
     const [trendingLists, setTrendingLists] = useState<List[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const refreshLists = async () => {
+        try {
+            const data = await getAllLists();
+            setLists(data);
+            setTrendingLists([...data].sort((a, b) => (b.karma || 0) - (a.karma || 0)));
+        } catch (error) {
+            console.error('Failed to load lists:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        getAllLists()
-            .then((data) => {
-                setLists(data);
-                setTrendingLists([...data].sort((a, b) => (b.karma || 0) - (a.karma || 0)));
-                setLoading(false);
-            })
-            .catch((error) => {
-                console.error('Failed to load lists:', error);
-                setLoading(false);
-            });
+        refreshLists();
+    }, []);
+
+    // Listen for list updates
+    useEffect(() => {
+        const handleListUpdate = () => {
+            refreshLists();
+        };
+
+        window.addEventListener('listUpdated', handleListUpdate);
+        return () => window.removeEventListener('listUpdated', handleListUpdate);
     }, []);
 
     if (loading) return <div className="p-8 text-center">Loading lists...</div>;

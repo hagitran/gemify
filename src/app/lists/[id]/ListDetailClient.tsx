@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { updateListName } from "../actions";
-import OngoingReviewCard from "@/app/components/OngoingReviewCard";
+import ListItem from "./ListItem";
 import { Place, List } from "../types";
+import supabase from "@/supabaseClient";
 
 export default function ListDetailClient({
     initialList,
@@ -14,6 +15,7 @@ export default function ListDetailClient({
     places: Place[]
 }) {
     const [list, setList] = useState(initialList);
+    const [currentPlaces, setCurrentPlaces] = useState(places);
     const [name, setName] = useState(initialList.name || "");
     const [nameChange, setNameChange] = useState("");
     const [error, setError] = useState<string | null>(null);
@@ -43,6 +45,34 @@ export default function ListDetailClient({
     };
 
     const userName = list?.createdBy;
+
+    // Listen for list updates
+    useEffect(() => {
+        const handleListUpdate = () => {
+            // Refetch places data instead of reloading the page
+            const refetchPlaces = async () => {
+                try {
+                    const { data: listPlaces } = await supabase
+                        .from("list_places")
+                        .select("place:place_id(*)")
+                        .eq("list_id", list.id);
+
+                    const places = (listPlaces || [])
+                        .map((lp: { place: Place[] }) => lp.place[0])
+                        .filter(Boolean) as unknown as Place[];
+
+                    setCurrentPlaces(places);
+                } catch (error) {
+                    console.error('Failed to refetch places:', error);
+                }
+            };
+
+            refetchPlaces();
+        };
+
+        window.addEventListener('listUpdated', handleListUpdate);
+        return () => window.removeEventListener('listUpdated', handleListUpdate);
+    }, [list.id]);
 
     return (
         <div className="flex flex-col w-1/2 mx-auto p-12">
@@ -77,14 +107,15 @@ export default function ListDetailClient({
                     {list.created_at ? new Date(list.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : ''}.
                 </span>
             </div>
-            <div className="mt-24">
-                {places.length === 0 ? (
+            <div className="mt-24 w-full">
+                {currentPlaces.length === 0 ? (
                     <div className="text-zinc-400">No places in this list yet.</div>
                 ) : (
-                    <ul className="flex flex-col gap-4">
-                        {places.map((place) => (
-                            <li key={place.id} className="flex flex-row gap-4">
-                                <OngoingReviewCard
+                    <ul className="flex flex-col gap-8">
+                        {currentPlaces.map((place, index) => (
+                            <li key={place.id} className="flex flex-col gap-4">
+                                <ListItem
+                                    index={index + 1}
                                     place={{
                                         id: place.id,
                                         name: place.name || '',
@@ -99,7 +130,6 @@ export default function ListDetailClient({
                                         added_by: place.addedBy || '',
                                         ambiance: place.ambiance?.[0] || undefined,
                                     }}
-                                    variant="default"
                                 />
                             </li>
                         ))}

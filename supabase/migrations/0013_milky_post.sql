@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "unique_list_place" ON "list_places" USING btree ("list_id","place_id");

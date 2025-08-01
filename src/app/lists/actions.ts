@@ -123,3 +123,28 @@ export async function decrementListPlaceCount(listId: number) {
     if (error) throw error;
   }
 }
+
+export async function getPlaceReviews(placeId: number) {
+  const { data, error } = await supabase
+    .from("user_reviews")
+    .select(
+      `
+      id,
+      note,
+      user_id,
+      image_path,
+      price,
+      ambiance,
+      created_at,
+      user:user_id(name)
+    `
+    )
+    .eq("place_id", placeId)
+    .not("note", "is", null)
+    .neq("note", "")
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  if (error) throw error;
+  return data || [];
+}

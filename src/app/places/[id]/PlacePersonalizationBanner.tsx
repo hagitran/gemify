@@ -4,6 +4,10 @@ import { authClient } from "@/app/lib/auth-client";
 import supabase from "@/supabaseClient";
 import { PlacePersonalizationBannerProps } from "../types";
 
+interface ExtendedProps extends PlacePersonalizationBannerProps {
+    type?: 'default' | 'list';
+}
+
 const AMBIANCE_LABELS: Record<string, string> = {
     cozy: "cozy",
     lively: "lively",
@@ -34,7 +38,7 @@ function placeToPreferences(place: { price?: number; ambiance?: string[] }) {
     return preferences;
 }
 
-export default function PlacePersonalizationBanner({ place }: PlacePersonalizationBannerProps) {
+export default function PlacePersonalizationBanner({ place, type = 'default' }: ExtendedProps) {
     const { data: session } = authClient.useSession();
     const [userPref, setUserPref] = useState<Record<string, number> | null>(null);
     const [loading, setLoading] = useState(true);
@@ -101,7 +105,7 @@ export default function PlacePersonalizationBanner({ place }: PlacePersonalizati
     }
 
     return (
-        <div className="flex underline decoration-emerald-600 text-xl sm:text-lg px-4 text-center max-w-xl mb-4 flex-col">
+        <div className={`flex underline decoration-emerald-600 px-4 text-center max-w-xl flex-col ${type === 'list' ? 'text-md py-4 border border-zinc-200 rounded-xl' : 'text-xl sm:text-lg mb-4'}`}>
             {message}
         </div>
     );

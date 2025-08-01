@@ -108,7 +108,7 @@ export default function PlacePersonalizationBanner({ place, type = 'default' }: 
     return (
         <div className={`flex underline decoration-emerald-600 px-4 text-center max-w-xl flex-col ${type === 'list' ? 'text-md py-4 border border-zinc-200 rounded-xl' : 'text-xl sm:text-lg mb-4'}`}>
             {message === "Personalizing..." ?
-                <Link href="/login">Sign up to see what we'd recommend.</Link>
+                <Link href="/login">Sign up to see what we&apos;d recommend.</Link>
                 : message
             }
         </div>

@@ -50,16 +50,30 @@ export default function AddToListButton({ placeId }: AddToListButtonProps) {
 
         // If 'New list' is selected, create it first
         if (selected.some(id => String(id) === NEW_LIST_VALUE)) {
-            const { data, error } = await supabase
+            const { data: listData, error: listError } = await supabase
                 .from("lists")
                 .insert([{ name: "New list", created_by: session?.user.id }])
-                .select();
-            if (error || !data || !data[0]) {
+                .select()
+                .single();
+
+            if (listError) throw listError;
+
+            // Add the creator as a list member
+            const { error: memberError } = await supabase
+                .from("list_members")
+                .insert([{
+                    user_id: session?.user.id,
+                    list_id: listData.id
+                }]);
+
+            if (memberError) throw memberError;
+
+            if (listError || !listData) {
                 setError("Failed to create list");
                 setAdding(false);
                 return;
             }
-            newListId = data[0].id;
+            newListId = listData.id;
             // Replace NEW_LIST_VALUE with the new id, filter to numbers only
             selected = selected.filter(id => typeof id === 'number');
             if (newListId !== null) selected = [...selected, newListId];
@@ -112,16 +126,34 @@ export default function AddToListButton({ placeId }: AddToListButtonProps) {
         setAdding(true);
         setError(null);
         setSuccess(null);
-        const { data, error } = await supabase
+        const { data: listData, error: listError } = await supabase
             .from("lists")
             .insert([{ name: "New list", created_by: session?.user.id }])
-            .select();
-        setAdding(false);
-        if (error || !data || !data[0]) {
+            .select()
+            .single();
+
+        if (listError || !listData) {
             setError("Failed to create list");
+            setAdding(false);
             return;
         }
-        router.push(`/lists/${data[0].id}`);
+
+        // Add the creator as a list member
+        const { error: memberError } = await supabase
+            .from("list_members")
+            .insert([{
+                user_id: session?.user.id,
+                list_id: listData.id
+            }]);
+
+        if (memberError) {
+            setError("Failed to add user to list");
+            setAdding(false);
+            return;
+        }
+
+        setAdding(false);
+        router.push(`/lists/${listData.id}`);
     };
 
     if (!session?.user?.id) return null;

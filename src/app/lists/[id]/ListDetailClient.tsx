@@ -6,6 +6,8 @@ import { updateListName } from "../actions";
 import ListItem from "./ListItem";
 import { Place, List } from "../types";
 import supabase from "@/supabaseClient";
+import { authClient } from "@/app/lib/auth-client";
+import DeleteListButton from "./DeleteListButton";
 
 export default function ListDetailClient({
     initialList,
@@ -29,22 +31,31 @@ export default function ListDetailClient({
             setNameChange("");
         }
         if (list && newName !== list.name) {
+            const { data: session } = await authClient.getSession();
+            if (!session?.user?.id) {
+                setError("You must be logged in to edit lists.");
+                return;
+            }
+
             const prevName = list.name;
             setList({ ...list, name: newName });
             setName(newName);
             setNameChange("");
             try {
-                await updateListName(list.id, newName);
+                await updateListName(list.id, newName, session.user.id);
                 setError(null);
-            } catch {
+            } catch (error) {
                 setList({ ...list, name: prevName });
                 setName(prevName);
-                setError("Failed to update name.");
+                setError(error instanceof Error ? error.message : "Failed to update name.");
             }
         }
     };
 
     const userName = list?.createdBy;
+    const { data: session } = authClient.useSession();
+    const isCreator = session?.user?.name === list?.createdBy;
+    console.log(list.createdBy, 'oirejf')
 
     // Listen for list updates
     useEffect(() => {
@@ -84,28 +95,34 @@ export default function ListDetailClient({
                     onChange={name === "New list" ? e => setNameChange(e.target.value) : e => setName(e.target.value)}
                     onBlur={handleNameBlur}
                     placeholder="New list"
-                    className={`min-w-48 text-3xl underline underline-offset-2 font-semibold flex-grow overflow-hidden whitespace-nowrap text-ellipsis focus:outline-none focus:underline decoration-emerald-600 ${(name === "New list" && !nameChange) ? "text-zinc-500" : "text-black"}`}
+                    className={`min-w-48 text-3xl underline underline-offset-2 font-semibold flex-grow overflow-hidden whitespace-nowrap text-ellipsis focus:outline-none focus:underline decoration-emerald-600 ${(name === "New list" && !nameChange) ? "text-zinc-500" : "text-black"} ${!isCreator ? 'cursor-default' : ''}`}
                     style={{ maxWidth: 'calc(100% - 48px)' }}
+                    readOnly={!isCreator}
                 />
-                <button
-                    onClick={() => inputRef.current?.focus()}
-                    className="p-2 pl-6 text-zinc-600 hover:text-emerald-600 transition-colors flex-shrink-0"
-                    aria-label="Rename list"
-                    type="button"
-                >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                </button>
+                {isCreator && (
+                    <button
+                        onClick={() => inputRef.current?.focus()}
+                        className="p-2 pl-6 text-zinc-600 hover:text-emerald-600 transition-colors flex-shrink-0"
+                        aria-label="Rename list"
+                        type="button"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </button>
+                )}
             </div>
             {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
-            <div>
-                This list was curated by{" "}
-                <Link href={`/profiles/${userName}`} className="underline underline-offset-2 decoration-zinc-600">{userName}</Link>
-                {" "} on {" "}
-                <span>
-                    {list.created_at ? new Date(list.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : ''}.
-                </span>
+            <div className="flex justify-between items-center">
+                <div>
+                    This list was curated by{" "}
+                    <Link href={`/profiles/${userName}`} className="underline underline-offset-2 decoration-zinc-600">{userName}</Link>
+                    {" "} on {" "}
+                    <span>
+                        {list.created_at ? new Date(list.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : ''}.
+                    </span>
+                </div>
+                <DeleteListButton listId={list.id} createdBy={list.createdBy || ''} />
             </div>
             <div className="mt-24 w-full">
                 {currentPlaces.length === 0 ? (

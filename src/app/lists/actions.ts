@@ -12,7 +12,24 @@ interface RawListData {
   created_by: { name: string } | { name: string }[];
 }
 
-export async function updateListName(id: number | string, name: string) {
+export async function updateListName(
+  id: number | string,
+  name: string,
+  userId: string
+) {
+  // Check if user is a member of the list
+  const { data: memberCheck, error: memberError } = await supabase
+    .from("list_members")
+    .select("id")
+    .eq("list_id", id)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (memberError) throw memberError;
+  if (!memberCheck) {
+    throw new Error("Unauthorized: User is not a member of this list");
+  }
+
   const { data, error } = await supabase
     .from("lists")
     .update({ name })

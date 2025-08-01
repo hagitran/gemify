@@ -55,13 +55,13 @@ export function Topbar() {
 
                 {/* Right Section: hide on mobile, show on sm+ */}
                 <div className="gap-2 hidden sm:flex">
-                    {/* <Link
+                    <Link
                         href="/lists"
                         className="px-4 py-2 text-sm text-zinc-700 hover:text-emerald-600 transition-colors"
                     >
                         Explore lists
                         <div className="text-xs text-zinc-400">Curated by you</div>
-                    </Link> */}
+                    </Link>
                     <Link
                         href="/add"
                         className="px-4 py-2 text-sm text-zinc-700 hover:text-emerald-600 transition-colors"

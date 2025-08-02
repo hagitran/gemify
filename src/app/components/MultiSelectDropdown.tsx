@@ -66,7 +66,7 @@ export default function MultiSelectDropdown({
         <div className={`relative py-2 ${dropdownClassName}`} ref={dropdownRef}>
             <button
                 type="button"
-                className={`p-2 w-full border border-zinc-300 rounded-lg focus:outline-none cursor-pointer text-md bg-white flex justify-between items-center ${buttonClassName}`}
+                className={`p-2 w-full border border-zinc-300 rounded-lg focus:outline-none ${selectedLabels.length == 0 && "text-zinc-500"} cursor-pointer text-md bg-white flex justify-between items-center ${buttonClassName}`}
                 onClick={() => setOpen(o => !o)}
                 disabled={disabled}
             >
@@ -101,6 +101,7 @@ export default function MultiSelectDropdown({
                                     checked={selected.includes(option.value)}
                                     onChange={() => toggleOption(option.value)}
                                     className="mr-4 accent-emerald-600"
+                                    required
                                 />
                                 {option.label}
                             </label>

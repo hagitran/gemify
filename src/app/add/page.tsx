@@ -138,6 +138,13 @@ export default function AddPlacePage() {
         e.preventDefault();
         setError(null);
         setResult(null);
+
+        // Validate required fields
+        if (!placeData.ambiance || placeData.ambiance.length === 0) {
+            setError("Please select at least one ambiance option");
+            return;
+        }
+
         setLoading(true);
         const res: AddPlaceResult = await addPlace({
             ...placeData,
@@ -546,7 +553,7 @@ export default function AddPlacePage() {
                                         id="place-type"
                                         value={placeData.type}
                                         onChange={(e) => setPlaceData(prev => ({ ...prev, type: e.target.value }))}
-                                        className="p-2 border border-zinc-300 w-full rounded-lg focus:outline-none focus:ring-2 text-md"
+                                        className={`p-2 border border-zinc-300 w-full rounded-lg focus:outline-none focus:ring-2 text-md ${!placeData.type ? 'text-zinc-500' : 'text-black'}`}
                                         required
                                     >
                                         <option value="">Is it a cafe, restaurant or experience?</option>
@@ -557,7 +564,7 @@ export default function AddPlacePage() {
                                     </select>
                                 </div>
                                 <div className="flex flex-col">
-                                    <label htmlFor="place-ambiance" className="block text-sm font-medium text-gray-700 mb-1">Ambiance</label>
+                                    <label htmlFor="place-ambiance" className="block text-sm font-medium text-gray-700 mb-1">Ambiance *</label>
                                     <MultiSelectDropdown
                                         options={AMBIANCE_OPTIONS}
                                         selected={placeData.ambiance}
@@ -575,7 +582,7 @@ export default function AddPlacePage() {
                                         placeholder="Address"
                                         value={placeData.address}
                                         onChange={(e) => setPlaceData(prev => ({ ...prev, address: e.target.value }))}
-                                        className="p-2 border border-zinc-300 w-full rounded-lg focus:outline-none focus:ring-2 text-md"
+                                        className="p-2 border border-zinc-300 placeholder-zinc-500 w-full rounded-lg focus:outline-none focus:ring-2 text-md"
                                         required
                                     />
                                 </div>
@@ -602,7 +609,7 @@ export default function AddPlacePage() {
                                         <label htmlFor="place-notes" className="block text-sm font-medium text-gray-700 mb-1">{(placeData.type == 'experience') ? "What would you do here?" : "What's your go to here?"}</label>
                                         <textarea
                                             id="place-notes"
-                                            placeholder={`The best way to experience ${placeData.name} is...`}
+                                            placeholder={`The iced chocolate here rocks...`}
                                             value={placeData.notes}
                                             onChange={(e) => setPlaceData(prev => ({ ...prev, notes: e.target.value }))}
                                             rows={2}

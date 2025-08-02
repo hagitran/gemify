@@ -11,6 +11,7 @@ import { geolocation } from "@vercel/functions";
 // }
 export async function GET(request: Request) {
   const data = geolocation(request);
+  console.log(request, "geo request");
 
   return Response.json({ city: data });
 }

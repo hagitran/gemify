@@ -54,11 +54,17 @@ export const CityRootProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             fetch('/api/geo')
                 .then(res => res.json())
                 .then(data => {
+                    console.log("Geo API response:", data);
                     let cityValue = data.city;
+
+                    // Handle different response formats
                     if (typeof cityValue === 'object' && cityValue !== null) {
                         cityValue = cityValue.code || cityValue.city || "sf";
                     }
-                    cityValue = String(cityValue).toLowerCase();
+
+                    cityValue = String(cityValue || "sf").toLowerCase();
+                    console.log("Processed city value:", cityValue);
+
                     if (validCities.includes(cityValue)) {
                         setCityState(cityValue);
                         setCookie('preferredCity', cityValue);

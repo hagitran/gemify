@@ -111,7 +111,7 @@ export default async function UserProfilePage({ params }: { params: Params }) {
             {/* Only render the OngoingReviewList section if the user is the profile owner (user is viewing their own profile). */}
             {/* This part of the code was not provided in the edit_specification, so it's commented out. */}
             {/* {session?.user?.name === profileName && ( */}
-            <OngoingReviewSectionClient profileName={user.name} ongoingReviews={ongoingReviews.slice(0, 2)} />
+            <OngoingReviewSectionClient profileName={user.name} ongoingReviews={ongoingReviews} />
             {/* )} */}
             <div>
                 <h2 className="text-xl font-semibold mb-2 py-4">Reviews</h2>

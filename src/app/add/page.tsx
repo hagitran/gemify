@@ -9,6 +9,7 @@ import Image from "next/image";
 import { useCityRoot } from "../CityRootContext";
 import { useRouter } from "next/navigation";
 import MultiSelectDropdown from "../components/MultiSelectDropdown";
+import { generateRubyPrompt } from "../../lib/ruby/addPlace";
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -112,6 +113,8 @@ export default function AddPlacePage() {
     const [inputFocused, setInputFocused] = useState(false);
     const [ambianceDropdownOpen, setAmbianceDropdownOpen] = useState(false);
     const ambianceDropdownRef = useRef<HTMLDivElement>(null);
+    const [rubyPrompt, setRubyPrompt] = useState<string>("what do you think about the place?");
+    const [rubyLoading, setRubyLoading] = useState<boolean>(false);
 
     // Add to recent queries
     const addRecentQuery = useCallback((query: string) => {
@@ -133,6 +136,21 @@ export default function AddPlacePage() {
     useEffect(() => {
         setPlaceData(prev => ({ ...prev, city: preferredCity }));
     }, [preferredCity]);
+
+    // Generate ruby prompt on blur of notes field
+    const handleNotesBlur = async () => {
+        setRubyLoading(true);
+        try {
+            const prompt = await generateRubyPrompt(placeData);
+            setRubyPrompt(prompt);
+        } catch (error) {
+            console.log("Failed to generate ruby prompt:", error);
+            // Fallback to a simple prompt
+            setRubyPrompt("anything else that would help someone new here?");
+        } finally {
+            setRubyLoading(false);
+        }
+    };
 
     async function handleAdd(e: React.FormEvent) {
         e.preventDefault();
@@ -532,6 +550,23 @@ export default function AddPlacePage() {
                                         disabled={imageUploading}
                                     />
                                 </label>
+                                <div className="flex flex-col flex-1 py-4 gap-4">
+                                    {/* {(rubyPrompt || rubyLoading) && ( */}
+                                    <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-4 max-w-md text-sm text-zinc-700">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="text-emerald-600 font-medium">ruby is here to help :)</span>
+                                        </div>
+                                        <span className="block mt-1">
+                                            {rubyLoading ? (
+                                                <span className="italic text-zinc-500">thinking...</span>
+                                            ) : (
+                                                rubyPrompt
+                                            )}
+                                        </span>
+                                    </div>
+                                    {/* )} */}
+                                </div>
+
                             </div>
 
                             <div className="flex flex-col gap-4 w-full">
@@ -612,6 +647,7 @@ export default function AddPlacePage() {
                                             placeholder={`The iced chocolate here rocks...`}
                                             value={placeData.notes}
                                             onChange={(e) => setPlaceData(prev => ({ ...prev, notes: e.target.value }))}
+                                            onBlur={handleNotesBlur}
                                             rows={2}
                                             className="p-2 border border-zinc-300 w-full rounded-lg focus:outline-none focus:ring-2 text-md resize-none"
                                             required

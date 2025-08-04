@@ -126,7 +126,7 @@ export default function Home() {
 
           {!isLoading && routeData && (
             <div className="flex flex-col w-full h-full gap-2 sm:gap-4 mt-8">
-              <h2 className="text-2xl font-bold">Gems to explore</h2>
+              <h2 className="text-2xl font-bold">What we recommend</h2>
               {Array.isArray(routeData) && (routeData as Place[]).length > 0 && (
                 <div className="flex w-full flex-wrap sm:gap-x-8 sm:gap-y-8 mt-2 justify-evenly sm:justify-center items-center">
                   {(routeData as Place[]).map((place: Place) => {

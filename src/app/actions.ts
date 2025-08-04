@@ -20,6 +20,25 @@ interface RawReview {
   } | null;
 }
 
+interface RawList {
+  id: number;
+  name: string;
+  created_at: string;
+  karma: number | null;
+  created_by: string;
+  place_count: number | null;
+  user: {
+    name: string | null;
+  } | null;
+  list_places:
+    | {
+        place: {
+          image_path: string | null;
+        } | null;
+      }[]
+    | null;
+}
+
 export async function getRouteData(
   city: string,
   root: string,
@@ -97,6 +116,74 @@ export async function getRecentReviews() {
     return { reviews: shuffledReviews };
   } catch (error) {
     console.error("Error in getRecentReviews:", error);
+    return { error };
+  }
+}
+
+export async function getRecommendedLists() {
+  try {
+    const { data: lists, error } = await supabase
+      .from("lists")
+      .select(
+        `
+        id,
+        name,
+        created_at,
+        karma,
+        created_by,
+        place_count,
+        user:created_by(
+          name
+        ),
+        list_places!inner(
+          place:place_id(
+            image_path
+          )
+        )
+      `
+      )
+      .order("created_at", { ascending: false })
+      .limit(20); // Get more lists to randomize from
+
+    if (error) {
+      console.error("Error fetching recommended lists:", error);
+      return { lists: [] };
+    }
+
+    if (!lists || lists.length === 0) {
+      return { lists: [] };
+    }
+
+    // Transform the data to match the component interface
+    const transformedLists =
+      (lists as unknown as RawList[])?.map((list: RawList) => {
+        // Get the first place's image as cover image
+        const firstPlace = list.list_places?.[0]?.place;
+        const coverImage = firstPlace?.image_path || null;
+
+        return {
+          id: list.id,
+          name: list.name,
+          created_at: list.created_at,
+          karma: list.karma || 0,
+          user: {
+            name: Array.isArray(list.user)
+              ? list.user[0]?.name
+              : list.user?.name || null,
+          },
+          cover_image: coverImage,
+          place_count: list.place_count || 0,
+        };
+      }) || [];
+
+    // Randomize the lists
+    const shuffledLists = transformedLists
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 4);
+
+    return { lists: shuffledLists };
+  } catch (error) {
+    console.error("Error in getRecommendedLists:", error);
     return { error };
   }
 }

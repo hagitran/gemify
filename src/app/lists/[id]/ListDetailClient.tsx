@@ -8,6 +8,7 @@ import { Place, List } from "../types";
 import supabase from "@/supabaseClient";
 import { authClient } from "@/app/lib/auth-client";
 import DeleteListButton from "./DeleteListButton";
+import RecommendedLists from "../../components/RecommendedLists";
 
 export default function ListDetailClient({
     initialList,
@@ -157,6 +158,11 @@ export default function ListDetailClient({
                         ))}
                     </ul>
                 )}
+            </div>
+
+            {/* Recommended Lists Section */}
+            <div className="mt-16 w-full">
+                <RecommendedLists />
             </div>
         </div>
     );

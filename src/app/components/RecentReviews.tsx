@@ -140,22 +140,6 @@ export default function RecentReviews() {
                                         })}
                                     </span>
                                 </div>
-
-                                {/* Price and ambiance tags */}
-                                {(review.price || review.ambiance) && (
-                                    <div className="flex items-center gap-2 mt-3">
-                                        {review.price && (
-                                            <span className="text-xs bg-white/20 backdrop-blur-sm text-white px-2 py-1 rounded-full">
-                                                ${review.price}
-                                            </span>
-                                        )}
-                                        {review.ambiance && (
-                                            <span className="text-xs bg-white/20 backdrop-blur-sm text-white px-2 py-1 rounded-full">
-                                                {review.ambiance}
-                                            </span>
-                                        )}
-                                    </div>
-                                )}
                             </div>
                         </div>
                     </Link>

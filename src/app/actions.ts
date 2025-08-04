@@ -62,7 +62,7 @@ export async function getRecentReviews() {
       .not("note", "is", null)
       .neq("note", "")
       .order("created_at", { ascending: false })
-      .limit(4);
+      .limit(20); // Get more reviews to randomize from
 
     if (error) {
       console.error("Error fetching recent reviews:", error);
@@ -89,7 +89,12 @@ export async function getRecentReviews() {
         },
       })) || [];
 
-    return { reviews: transformedReviews };
+    // Randomize the reviews
+    const shuffledReviews = transformedReviews
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 4);
+
+    return { reviews: shuffledReviews };
   } catch (error) {
     console.error("Error in getRecentReviews:", error);
     return { error };

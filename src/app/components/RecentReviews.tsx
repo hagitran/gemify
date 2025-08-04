@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { getRecentReviews } from "../actions";
 
 interface Review {
@@ -26,6 +27,14 @@ interface Review {
 export default function RecentReviews() {
     const [reviews, setReviews] = useState<Review[]>([]);
     const [loading, setLoading] = useState(true);
+    const pathname = usePathname();
+
+    const isPlacePage = pathname?.startsWith('/places/');
+    const title = isPlacePage ? "Try another gem" : "What people are saying";
+    const containerClass = isPlacePage ? "w-full flex flex-col items-center" : "w-full";
+    const cardClass = isPlacePage ? "w-64 flex-shrink-0" : "w-80 flex-shrink-0";
+    const scrollClass = isPlacePage ? "flex gap-6 overflow-x-auto pb-4 px-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]" : "flex gap-4 overflow-x-auto pb-4";
+    const cardCount = isPlacePage ? 3 : 4;
 
     useEffect(() => {
         const fetchRecentReviews = async () => {
@@ -46,11 +55,11 @@ export default function RecentReviews() {
 
     if (loading) {
         return (
-            <div className="w-full flex flex-col items-center">
+            <div className="w-full">
                 <h2 className="text-2xl font-bold mb-6">What people are saying</h2>
-                <div className="flex gap-4 overflow-x-auto pb-4">
+                <div className="flex justify-center gap-4 pb-4">
                     {[...Array(4)].map((_, i) => (
-                        <div key={i} className="bg-white rounded-lg p-4 animate-pulse w-80 flex-shrink-0">
+                        <div key={i} className="bg-white rounded-lg p-4 animate-pulse w-[268px] flex-shrink-0">
                             <div className="h-32 bg-gray-200 rounded-lg mb-3"></div>
                             <div className="h-4 bg-gray-200 rounded mb-2"></div>
                             <div className="h-3 bg-gray-200 rounded w-2/3"></div>
@@ -66,16 +75,16 @@ export default function RecentReviews() {
     }
 
     return (
-        <div className="w-full flex flex-col items-center">
-            <h2 className="text-2xl font-bold mb-6">What people are saying</h2>
-            <div className="flex gap-4 overflow-x-auto pb-4">
-                {reviews.map((review) => (
+        <div className={containerClass}>
+            <h2 className="text-2xl font-bold mb-6">{title}</h2>
+            <div className={scrollClass}>
+                {reviews.slice(0, cardCount).map((review) => (
                     <Link
                         key={review.id}
                         href={`/places/${review.place.id}`}
                         className="bg-white rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-200"
                     >
-                        <div className="relative h-48 bg-gray-100 w-80 flex-shrink-0">
+                        <div className={`relative h-48 bg-gray-100 ${cardClass}`}>
                             {review.place.image_path ? (
                                 <Image
                                     src={review.place.image_path}

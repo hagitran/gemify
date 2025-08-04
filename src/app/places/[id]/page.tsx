@@ -201,7 +201,7 @@ export default async function PlacePage({ params }: { params: Promise<{ id: stri
                 </div>
 
                 {/* Recent Reviews Section */}
-                <div className="w-full p-4 sm:p-8 mb-8">
+                <div className="w-full max-w-full sm:max-w-2xl p-4 sm:p-8 mb-8">
                     <RecentReviews />
                 </div>
 

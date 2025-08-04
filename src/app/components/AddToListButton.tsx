@@ -27,6 +27,7 @@ export default function AddToListButton({ placeId }: AddToListButtonProps) {
             .from("lists")
             .select("id, name")
             .eq("created_by", session.user.id)
+            .order("created_at", { ascending: false })
             .then(({ data }) => {
                 setLists(data || []);
                 setLoading(false);

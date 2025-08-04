@@ -16,7 +16,7 @@ interface Review {
         name: string;
         type: string | null;
         city: string | null;
-        imagePath: string | null;
+        image_path: string | null;
     };
     user: {
         name: string | null;
@@ -46,11 +46,11 @@ export default function RecentReviews() {
 
     if (loading) {
         return (
-            <div className="w-full">
+            <div className="w-full flex flex-col items-center">
                 <h2 className="text-2xl font-bold mb-6">What people are saying</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="flex gap-4 overflow-x-auto pb-4">
                     {[...Array(4)].map((_, i) => (
-                        <div key={i} className="bg-white rounded-lg p-4 animate-pulse">
+                        <div key={i} className="bg-white rounded-lg p-4 animate-pulse w-80 flex-shrink-0">
                             <div className="h-32 bg-gray-200 rounded-lg mb-3"></div>
                             <div className="h-4 bg-gray-200 rounded mb-2"></div>
                             <div className="h-3 bg-gray-200 rounded w-2/3"></div>
@@ -66,19 +66,19 @@ export default function RecentReviews() {
     }
 
     return (
-        <div className="w-full">
+        <div className="w-full flex flex-col items-center">
             <h2 className="text-2xl font-bold mb-6">What people are saying</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="flex gap-4 overflow-x-auto pb-4">
                 {reviews.map((review) => (
                     <Link
                         key={review.id}
                         href={`/places/${review.place.id}`}
                         className="bg-white rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-200"
                     >
-                        <div className="relative h-48 bg-gray-100">
-                            {review.place.imagePath ? (
+                        <div className="relative h-48 bg-gray-100 w-80 flex-shrink-0">
+                            {review.place.image_path ? (
                                 <Image
-                                    src={review.place.imagePath}
+                                    src={review.place.image_path}
                                     alt={review.place.name}
                                     fill
                                     className="object-cover w-full h-full"

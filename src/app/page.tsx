@@ -117,10 +117,15 @@ export default function Home() {
 
           {/* Loading skeletons */}
           {isLoading && (
-            <div className="flex w-full flex-wrap sm:gap-x-8 sm:gap-y-8 mt-2 justify-evenly sm:justify-center items-center">
-              {Array.from({ length: 15 }).map((_, i) => (
-                <PlaceCardSkeleton key={i} />
-              ))}
+
+            <div className="flex flex-col w-full flex-wrap sm:gap-x-8 sm:gap-y-8 mt-2 justify-evenly">
+              <h2 className="text-2xl font-bold">What we recommend</h2>
+              <div className="flex w-full flex-wrap sm:gap-x-8 sm:gap-y-8 mt-2 justify-evenly sm:justify-center items-center">
+
+                {Array.from({ length: 15 }).map((_, i) => (
+                  <PlaceCardSkeleton key={i} />
+                ))}
+              </div>
             </div>
           )}
 

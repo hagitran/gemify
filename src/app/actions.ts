@@ -2,7 +2,7 @@
 
 import supabase from "../supabaseClient";
 
-interface TransformedReview {
+interface RawReview {
   id: number;
   note: string;
   price: number | null;
@@ -13,11 +13,11 @@ interface TransformedReview {
     name: string;
     type: string | null;
     city: string | null;
-    imagePath: string | null;
-  };
+    image_path: string | null;
+  } | null;
   user: {
     name: string | null;
-  };
+  } | null;
 }
 
 export async function getRouteData(
@@ -70,8 +70,8 @@ export async function getRecentReviews() {
     }
 
     // Transform the data to match the component interface
-    const transformedReviews: TransformedReview[] =
-      reviews?.map((review: any) => ({
+    const transformedReviews =
+      (reviews as unknown as RawReview[])?.map((review: RawReview) => ({
         id: review.id,
         note: review.note,
         price: review.price,
@@ -82,7 +82,7 @@ export async function getRecentReviews() {
           name: review.place?.name || "",
           type: review.place?.type || null,
           city: review.place?.city || null,
-          imagePath: review.place?.image_path || null,
+          image_path: review.place?.image_path || null,
         },
         user: {
           name: review.user?.name || null,

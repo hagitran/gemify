@@ -8,6 +8,7 @@ import { revalidatePath } from "next/cache";
 import DeletePlaceButton from "./DeletePlaceButton";
 import ViewInteractionLogger from "./ViewInteractionLogger";
 import PlacePersonalizationBanner from "./PlacePersonalizationBanner";
+import RecentReviews from "../../components/RecentReviews";
 import { Place, RawNote, Note, MatchBadge } from "../types";
 
 function getMatchBadge(score?: number): MatchBadge | null {
@@ -198,6 +199,12 @@ export default async function PlacePage({ params }: { params: Promise<{ id: stri
                         handleDeleteNote={handleDeleteNote}
                     />
                 </div>
+
+                {/* Recent Reviews Section */}
+                <div className="w-full p-4 sm:p-8 mb-8">
+                    <RecentReviews />
+                </div>
+
             </div>
         </>
     );

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { getRouteData } from "./actions";
 import PlaceCard from "./components/PlaceCard";
 import PlaceCardSkeleton from "./components/PlaceCardSkeleton";
+import RecentReviews from "./components/RecentReviews";
 import { useCityRoot } from "./CityRootContext";
 
 function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
@@ -110,10 +111,13 @@ export default function Home() {
   return (
     <div className="flex w-full h-full flex-col font-[family-name:var(--font-geist-sans)] text-zinc-700">
       <main className="flex flex-col flex-1 gap-8 items-center pt-16">
-        <div className="flex justify-center items-center w-full h-full flex-col gap-8">
+        <div className="flex justify-center items-center w-full h-full flex-col gap-8 max-w-6xl mx-auto px-4">
+          {/* Recent Reviews Section */}
+          <RecentReviews />
+
           {/* Loading skeletons */}
           {isLoading && (
-            <div className="flex w-full flex-wrap sm:gap-x-8 sm:gap-y-8 mt-2 max-w-6xl sm:mx-auto justify-evenly sm:justify-center items-center">
+            <div className="flex w-full flex-wrap sm:gap-x-8 sm:gap-y-8 mt-2 justify-evenly sm:justify-center items-center">
               {Array.from({ length: 15 }).map((_, i) => (
                 <PlaceCardSkeleton key={i} />
               ))}
@@ -121,9 +125,10 @@ export default function Home() {
           )}
 
           {!isLoading && routeData && (
-            <div className="flex w-full h-full gap-2 sm:gap-4 sm:justify-center items-center">
+            <div className="flex flex-col w-full h-full gap-2 sm:gap-4 mt-8">
+              <h2 className="text-2xl font-bold">Gems to explore</h2>
               {Array.isArray(routeData) && (routeData as Place[]).length > 0 && (
-                <div className="flex w-full flex-wrap sm:gap-x-8 sm:gap-y-8 mt-2 max-w-6xl sm:mx-auto justify-evenly sm:justify-center items-center">
+                <div className="flex w-full flex-wrap sm:gap-x-8 sm:gap-y-8 mt-2 justify-evenly sm:justify-center items-center">
                   {(routeData as Place[]).map((place: Place) => {
                     let distance = null;
                     if (

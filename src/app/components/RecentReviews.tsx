@@ -32,8 +32,8 @@ export default function RecentReviews() {
     const isPlacePage = pathname?.startsWith('/places/');
     const title = isPlacePage ? "Try another gem" : "What people are saying";
     const containerClass = isPlacePage ? "w-full flex flex-col items-center" : "w-full";
-    const cardClass = isPlacePage ? "w-64 flex-shrink-0" : "w-80 flex-shrink-0";
-    const scrollClass = isPlacePage ? "flex gap-6 overflow-x-auto pb-4 px-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]" : "flex gap-4 overflow-x-auto pb-4";
+    const cardClass = "w-64 flex-shrink-0";
+    const scrollClass = "flex gap-4 sm:gap-6 overflow-x-auto pb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]";
     const cardCount = isPlacePage ? 3 : 4;
 
     useEffect(() => {
@@ -82,7 +82,7 @@ export default function RecentReviews() {
                     <Link
                         key={review.id}
                         href={`/places/${review.place.id}`}
-                        className="bg-white rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-200"
+                        className="bg-white min-w-64 rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-200"
                     >
                         <div className={`relative h-48 bg-gray-100 ${cardClass}`}>
                             {review.place.image_path ? (
@@ -121,7 +121,7 @@ export default function RecentReviews() {
                                 <h3 className="font-semibold text-white mb-2 truncate">
                                     {review.place.name}
                                 </h3>
-                                <p className="text-sm text-gray-100 mb-3 line-clamp-2 opacity-80 h-6 truncate">
+                                <p className="text-sm text-gray-100 mb-3 line-clamp-2 opacity-80 h-6 truncate w-full">
                                     {review.note}
                                 </p>
 

@@ -24,7 +24,7 @@ export const CityRootProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const [city, setCityState] = useState("sf");
     const [root, setRootState] = useState("All");
 
-    const validCities = ["sf", "hcmc"];
+    const validCities = ["sf", "hcmc", "la"];
 
     const setCity = (newCity: string) => {
         const cityStr = String(newCity ?? "").toLowerCase();

@@ -110,14 +110,14 @@ export default function ListItem({ index, place }: ListItemProps) {
 
             {/* Review Card */}
             {(!loading && reviews.length > 0) ? (
-                <div className="flex flex-row mt-2 flex-nowrap gap-4">
-                    <div className="flex flex-col w-1/2">
+                <div className="flex flex-col sm:flex-row mt-2 gap-4">
+                    <div className="flex flex-col w-full sm:w-2/5">
                         <div className="underline underline-offset-2 decoration-emerald-600 font-medium py-2">Users say</div>
                         <ListReviewCard
                             note={reviews[0]}
                         />
                     </div>
-                    <div className="flex flex-col w-1/2 px-2">
+                    <div className="flex flex-col w-full sm:w-3/5 px-0 sm:px-2">
                         <div className="underline underline-offset-2 decoration-emerald-600 font-medium py-2">We think</div>
                         <PlacePersonalizationBanner type="list" place={{
                             name: place.name,

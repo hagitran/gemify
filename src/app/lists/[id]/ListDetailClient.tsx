@@ -87,8 +87,8 @@ export default function ListDetailClient({
     }, [list.id]);
 
     return (
-        <div className="flex flex-col w-1/2 mx-auto p-12">
-            <div className="flex items-center gap-2 min-w-64 max-w-full justify-between mb-4">
+        <div className="flex flex-col w-full sm:w-3/4 lg:w-1/2 mx-auto p-4 sm:p-8 lg:p-12">
+            <div className="flex items-center gap-2 min-w-48 sm:min-w-64 max-w-full justify-between mb-4">
                 <input
                     ref={inputRef}
                     type="text"
@@ -96,7 +96,7 @@ export default function ListDetailClient({
                     onChange={name === "New list" ? e => setNameChange(e.target.value) : e => setName(e.target.value)}
                     onBlur={handleNameBlur}
                     placeholder="New list"
-                    className={`min-w-48 text-3xl underline underline-offset-2 font-semibold flex-grow overflow-hidden whitespace-nowrap text-ellipsis focus:outline-none focus:underline decoration-emerald-600 ${(name === "New list" && !nameChange) ? "text-zinc-500" : "text-black"} ${!isCreator ? 'cursor-default' : ''}`}
+                    className={`min-w-32 sm:min-w-48 text-xl sm:text-2xl lg:text-3xl underline underline-offset-2 font-semibold flex-grow overflow-hidden whitespace-nowrap text-ellipsis focus:outline-none focus:underline decoration-emerald-600 ${(name === "New list" && !nameChange) ? "text-zinc-500" : "text-black"} ${!isCreator ? 'cursor-default' : ''}`}
                     style={{ maxWidth: 'calc(100% - 48px)' }}
                     readOnly={!isCreator}
                 />
@@ -114,9 +114,9 @@ export default function ListDetailClient({
                 )}
             </div>
             {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
-            <div className="flex justify-between items-center">
-                <div className="flex items-center gap-4">
-                    <div>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+                    <div className="text-sm sm:text-base">
                         This list was curated by{" "}
                         <Link href={`/profiles/${userName}`} className="underline underline-offset-2 decoration-zinc-600">{userName}</Link>
                         {" "} on {" "}

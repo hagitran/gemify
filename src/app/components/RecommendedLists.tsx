@@ -26,8 +26,8 @@ export default function RecommendedLists() {
     const isListPage = pathname?.startsWith('/lists/');
     const title = isListPage ? "Discover more lists" : "Curated lists";
     const containerClass = isListPage ? "w-full flex flex-col items-center" : "w-full";
-    const cardClass = isListPage ? "w-64 flex-shrink-0" : "w-80 flex-shrink-0";
-    const scrollClass = isListPage ? "flex gap-6 overflow-x-auto pb-4 px-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]" : "flex gap-4 overflow-x-auto pb-4";
+    const cardClass = "w-64 flex-shrink-0";
+    const scrollClass = "flex w-full sm:w-max gap-4 sm:gap-6 overflow-x-auto pb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]";
     const cardCount = isListPage ? 3 : 4;
 
     useEffect(() => {
@@ -56,8 +56,8 @@ export default function RecommendedLists() {
                 <h2 className="text-2xl font-bold mb-6">Curated lists</h2>
                 <div className="flex justify-center gap-4 pb-4">
                     {[...Array(4)].map((_, i) => (
-                        <div key={i} className="bg-white rounded-lg p-4 animate-pulse w-[268px] flex-shrink-0">
-                            <div className="h-32 bg-gray-200 rounded-lg mb-3"></div>
+                        <div key={i} className="bg-white rounded-lg p-4 animate-pulse w-64 flex-shrink-0">
+                            <div className="h-48 bg-gray-200 rounded-lg mb-3"></div>
                             <div className="h-4 bg-gray-200 rounded mb-2"></div>
                             <div className="h-3 bg-gray-200 rounded w-2/3"></div>
                         </div>
@@ -79,7 +79,7 @@ export default function RecommendedLists() {
                     <Link
                         key={list.id}
                         href={`/lists/${list.id}`}
-                        className="bg-white rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-200"
+                        className="bg-white min-w-64 rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-200"
                     >
                         <div className={`relative h-48 bg-gray-100 ${cardClass}`}>
                             {list.cover_image ? (

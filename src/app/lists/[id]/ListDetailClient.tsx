@@ -87,7 +87,7 @@ export default function ListDetailClient({
     }, [list.id]);
 
     return (
-        <div className="flex flex-col w-full sm:w-3/4 lg:w-1/2 mx-auto p-4 sm:p-8 lg:p-12">
+        <div className="flex flex-col w-full sm:w-3/4 lg:w-1/2 mx-auto p-4 py-8 sm:p-8 lg:p-12">
             <div className="flex items-center gap-2 min-w-48 sm:min-w-64 max-w-full justify-between mb-4">
                 <input
                     ref={inputRef}
@@ -96,7 +96,7 @@ export default function ListDetailClient({
                     onChange={name === "New list" ? e => setNameChange(e.target.value) : e => setName(e.target.value)}
                     onBlur={handleNameBlur}
                     placeholder="New list"
-                    className={`min-w-32 sm:min-w-48 text-xl sm:text-2xl lg:text-3xl underline underline-offset-2 font-semibold flex-grow overflow-hidden whitespace-nowrap text-ellipsis focus:outline-none focus:underline decoration-emerald-600 ${(name === "New list" && !nameChange) ? "text-zinc-500" : "text-black"} ${!isCreator ? 'cursor-default' : ''}`}
+                    className={`min-w-32 sm:min-w-48 text-3xl sm:text-2xl lg:text-3xl underline underline-offset-2 font-semibold flex-grow overflow-hidden whitespace-nowrap text-ellipsis focus:outline-none focus:underline decoration-emerald-600 ${(name === "New list" && !nameChange) ? "text-zinc-500" : "text-black"} ${!isCreator ? 'cursor-default' : ''}`}
                     style={{ maxWidth: 'calc(100% - 48px)' }}
                     readOnly={!isCreator}
                 />
@@ -114,9 +114,9 @@ export default function ListDetailClient({
                 )}
             </div>
             {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-                    <div className="text-sm sm:text-base">
+            <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center gap-4 sm:gap-0">
+                <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 sm:gap-4">
+                    <div className="text-lg sm:text-base">
                         This list was curated by{" "}
                         <Link href={`/profiles/${userName}`} className="underline underline-offset-2 decoration-zinc-600">{userName}</Link>
                         {" "} on {" "}
@@ -130,7 +130,7 @@ export default function ListDetailClient({
                 </div>
                 <DeleteListButton listId={list.id} createdBy={list.createdBy || ''} />
             </div>
-            <div className="mt-24 w-full">
+            <div className="mt-8 sm:mt-24 w-full">
                 {currentPlaces.length === 0 ? (
                     <div className="text-zinc-400">No places in this list yet.</div>
                 ) : (

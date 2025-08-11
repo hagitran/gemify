@@ -3,7 +3,7 @@ import supabase from "@/supabaseClient";
 export async function getUserByName(name: string) {
   const { data, error } = await supabase
     .from("user")
-    .select("*")
+    .select("id, name")
     .eq("name", name)
     .single();
   if (error) console.log(error, "user error");

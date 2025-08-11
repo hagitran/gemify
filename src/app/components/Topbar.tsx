@@ -78,8 +78,7 @@ export function Topbar() {
                             </div>
                         ) : session && session.user ? (
                             <UserDropdown
-                                userName={session.user.name || session.user.email || 'User'}
-                                userEmail={session.user.email}
+                                userName={session.user.name || 'User'}
                                 onSignOut={handleSignOut}
                             />
                         ) : (

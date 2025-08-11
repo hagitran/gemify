@@ -10,7 +10,6 @@ export const revalidate = 60;
 interface User {
     id: string;
     name: string;
-    email: string;
 }
 
 interface UserReview {
@@ -81,7 +80,13 @@ export default async function UserProfilePage({ params }: { params: Params }) {
         user: { name: user.name }
     }));
 
-    const ongoingReviews = reviews.filter(r => r.tried === false && r.place).map(r => ({
+    const ongoingReviews = reviews.filter(r =>
+        r.tried === false &&
+        r.place &&
+        r.price !== null &&
+        r.ambiance !== null &&
+        r.note !== null
+    ).map(r => ({
         id: r.id,
         place: {
             id: r.place!.id,
@@ -89,9 +94,9 @@ export default async function UserProfilePage({ params }: { params: Params }) {
             city: "",
             type: "",
             image_path: r.place!.image_path || "",
-            price: 0,
+            price: r.price,
             added_by: "",
-            ambiance: undefined
+            ambiance: r.ambiance
         }
     })) as OngoingReview[];
 
@@ -102,7 +107,7 @@ export default async function UserProfilePage({ params }: { params: Params }) {
                     {user.name?.[0]?.toUpperCase()}
                 </div>
                 <h1 className="text-3xl font-bold">{user.name}</h1>
-                <div className="text-zinc-500">{user.email}</div>
+                {/* <div className="text-zinc-500">{user.email}</div> */}
             </div>
             {/* Assume you have access to session and profileName */}
             {/* const { data: session } = authClient.useSession(); */}

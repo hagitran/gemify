@@ -5,11 +5,10 @@ import { useState, useRef, useEffect } from "react";
 
 interface UserDropdownProps {
     userName: string;
-    userEmail?: string;
     onSignOut: () => void;
 }
 
-export function UserDropdown({ userName, userEmail, onSignOut }: UserDropdownProps) {
+export function UserDropdown({ userName, onSignOut }: UserDropdownProps) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -44,10 +43,7 @@ export function UserDropdown({ userName, userEmail, onSignOut }: UserDropdownPro
                     {userName.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex flex-col items-start">
-                    <span className="text-sm font-medium">{userName.replace(/@.*/, '')}</span>
-                    {userEmail && (
-                        <span className="text-xs text-zinc-500">{userEmail}</span>
-                    )}
+                    <span className="text-sm font-medium">{userName}</span>
                 </div>
                 <svg
                     className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}

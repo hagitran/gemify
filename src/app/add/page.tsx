@@ -70,7 +70,6 @@ const MAX_RECENT_QUERIES = 5;
 interface SessionUser {
     id: string;
     name: string;
-    email: string;
     preferredCity?: string;
     // ...other fields as needed
 }

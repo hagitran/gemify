@@ -454,7 +454,8 @@ export default function AddPlacePage() {
                                 }}
                             >
                                 <option value="sf">San Francisco</option>
-                                <option value="la">Los Angeles</option>
+                                {/* <option value="la">Los Angeles</option> */}
+                                {/* <option value="tp">Taipei</option> */}
                                 <option value="hcmc">Ho Chi Minh City</option>
                             </select>
                         </div>                    </div>

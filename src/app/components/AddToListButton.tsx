@@ -51,29 +51,46 @@ export default function AddToListButton({ placeId }: AddToListButtonProps) {
 
         // If 'New list' is selected, create it first
         if (selected.some(id => String(id) === NEW_LIST_VALUE)) {
+            if (!session?.user?.id) {
+                setError("You must be logged in to create a list");
+                setAdding(false);
+                return;
+            }
+
             const { data: listData, error: listError } = await supabase
                 .from("lists")
-                .insert([{ name: "New list", created_by: session?.user.id }])
+                .insert([{ name: "New list", created_by: session.user.id }])
                 .select()
                 .single();
 
-            if (listError) throw listError;
+            if (listError) {
+                console.error("List creation error:", listError);
+                setError(`Failed to create list: ${listError.message}`);
+                setAdding(false);
+                return;
+            }
+
+            if (!listData) {
+                setError("Failed to create list: No data returned");
+                setAdding(false);
+                return;
+            }
 
             // Add the creator as a list member
             const { error: memberError } = await supabase
                 .from("list_members")
                 .insert([{
-                    user_id: session?.user.id,
+                    user_id: session.user.id,
                     list_id: listData.id
                 }]);
 
-            if (memberError) throw memberError;
-
-            if (listError || !listData) {
-                setError("Failed to create list");
+            if (memberError) {
+                console.error("Member creation error:", memberError);
+                setError(`Failed to add user to list: ${memberError.message}`);
                 setAdding(false);
                 return;
             }
+
             newListId = listData.id;
             // Replace NEW_LIST_VALUE with the new id, filter to numbers only
             selected = selected.filter(id => typeof id === 'number');
@@ -127,14 +144,28 @@ export default function AddToListButton({ placeId }: AddToListButtonProps) {
         setAdding(true);
         setError(null);
         setSuccess(null);
+
+        if (!session?.user?.id) {
+            setError("You must be logged in to create a list");
+            setAdding(false);
+            return;
+        }
+
         const { data: listData, error: listError } = await supabase
             .from("lists")
-            .insert([{ name: "New list", created_by: session?.user.id }])
+            .insert([{ name: "New list", created_by: session.user.id }])
             .select()
             .single();
 
-        if (listError || !listData) {
-            setError("Failed to create list");
+        if (listError) {
+            console.error("List creation error:", listError);
+            setError(`Failed to create list: ${listError.message}`);
+            setAdding(false);
+            return;
+        }
+
+        if (!listData) {
+            setError("Failed to create list: No data returned");
             setAdding(false);
             return;
         }
@@ -143,12 +174,13 @@ export default function AddToListButton({ placeId }: AddToListButtonProps) {
         const { error: memberError } = await supabase
             .from("list_members")
             .insert([{
-                user_id: session?.user.id,
+                user_id: session.user.id,
                 list_id: listData.id
             }]);
 
         if (memberError) {
-            setError("Failed to add user to list");
+            console.error("Member creation error:", memberError);
+            setError(`Failed to add user to list: ${memberError.message}`);
             setAdding(false);
             return;
         }

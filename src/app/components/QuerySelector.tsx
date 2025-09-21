@@ -34,7 +34,6 @@ export function QuerySelector({ city, root, onCityChange, onRootChange }: QueryS
                         onChange={(e) => handleCityChange(e.target.value)}
                     >
                         <option value="hcmc">Ho Chi Minh City</option>
-                        <option value="la">Los Angeles</option>
                         <option value="sf">San Francisco</option>
                     </select>
                 </div>

@@ -6,7 +6,7 @@ const MAX_TEXT_LENGTH = 5000;
 const CRITERION = "specific-dish-mentioned";
 
 export async function POST(request: NextRequest) {
-  const apiKey = process.env.WHETDATA_API_KEY;
+  const apiKey = process.env.NEXT_PUBLIC_WHETDATA_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
       { error: "Whetdata API key is not configured" },
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
   let body: { text?: unknown };
   try {
     body = await request.json();
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     let data: Record<string, unknown> | null = null;
     try {
       data = rawBody ? JSON.parse(rawBody) : null;
-    } catch (error) {
+    } catch {
       data = null;
     }
 

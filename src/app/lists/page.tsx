@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { getAllLists, getListPlaces } from "./actions";
 import PlaceCard from "@/app/components/PlaceCard";
@@ -20,7 +20,7 @@ function ListCard({ list }: { list: List }) {
     const [places, setPlaces] = useState<Place[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const refreshPlaces = async () => {
+    const refreshPlaces = useCallback(async () => {
         try {
             const data = await getListPlaces(list.id);
             setPlaces(data);
@@ -29,11 +29,11 @@ function ListCard({ list }: { list: List }) {
         } finally {
             setLoading(false);
         }
-    };
+    }, [list.id]);
 
     useEffect(() => {
         refreshPlaces();
-    }, [list.id]);
+    }, [refreshPlaces]);
 
     // Listen for list updates
     useEffect(() => {
@@ -43,7 +43,7 @@ function ListCard({ list }: { list: List }) {
 
         window.addEventListener('listUpdated', handleListUpdate);
         return () => window.removeEventListener('listUpdated', handleListUpdate);
-    }, [list.id]);
+    }, [refreshPlaces]);
 
     return (
         <li key={list.id} className="rounded py-4 bg-white">
@@ -112,7 +112,7 @@ export default function ListsPage() {
     const [trendingLists, setTrendingLists] = useState<List[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const refreshLists = async () => {
+    const refreshLists = useCallback(async () => {
         try {
             const data = await getAllLists();
             setLists(data);
@@ -122,11 +122,11 @@ export default function ListsPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         refreshLists();
-    }, []);
+    }, [refreshLists]);
 
     // Listen for list updates
     useEffect(() => {
@@ -136,7 +136,7 @@ export default function ListsPage() {
 
         window.addEventListener('listUpdated', handleListUpdate);
         return () => window.removeEventListener('listUpdated', handleListUpdate);
-    }, []);
+    }, [refreshLists]);
 
     if (loading) return <div className="p-8 text-center">Loading lists...</div>;
 

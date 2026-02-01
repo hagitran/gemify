@@ -1,6 +1,9 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from "react";
 
+const VALID_CITIES = ["sf", "hcmc", "la"];
+const VALID_ROOTS = ["Food", "Cafe", "Experience", "All"];
+
 type CityRootContextType = {
     city: string;
     setCity: (city: string) => void;
@@ -24,11 +27,9 @@ export const CityRootProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const [city, setCityState] = useState("sf");
     const [root, setRootState] = useState("All");
 
-    const validCities = ["sf", "hcmc", "la"];
-
     const setCity = (newCity: string) => {
         const cityStr = String(newCity ?? "").toLowerCase();
-        if (validCities.includes(cityStr)) {
+        if (VALID_CITIES.includes(cityStr)) {
             setCityState(cityStr);
             setCookie("preferredCity", cityStr);
         } else {
@@ -37,9 +38,8 @@ export const CityRootProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
     };
 
-    const validRoots = ["Food", "Cafe", "Experience", "All"];
     const setRoot = (newRoot: string) => {
-        if (validRoots.includes(newRoot)) {
+        if (VALID_ROOTS.includes(newRoot)) {
             setRootState(newRoot);
         } else {
             setRootState("All");
@@ -48,7 +48,7 @@ export const CityRootProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     useEffect(() => {
         const cookieCity = getCookie('preferredCity');
-        if (typeof cookieCity === 'string' && validCities.includes(cookieCity.toLowerCase())) {
+        if (typeof cookieCity === 'string' && VALID_CITIES.includes(cookieCity.toLowerCase())) {
             setCityState(cookieCity.toLowerCase());
         } else {
             fetch('/api/geo')
@@ -65,7 +65,7 @@ export const CityRootProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                     cityValue = String(cityValue || "sf").toLowerCase();
                     console.log("Processed city value:", cityValue);
 
-                    if (validCities.includes(cityValue)) {
+                    if (VALID_CITIES.includes(cityValue)) {
                         setCityState(cityValue);
                         setCookie('preferredCity', cityValue);
                     } else {
@@ -78,7 +78,7 @@ export const CityRootProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                     setCookie('preferredCity', "sf");
                 });
         }
-    }, [validCities]);
+    }, []);
 
     return (
         <CityRootContext.Provider value={{ city, setCity, root, setRoot }}>

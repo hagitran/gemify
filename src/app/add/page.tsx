@@ -132,7 +132,7 @@ export default function AddPlacePage() {
             .then(data => {
                 if (data.city) setPreferredCity(data.city);
             });
-    }, []);
+    }, [setPreferredCity]);
 
     useEffect(() => {
         setPlaceData(prev => ({ ...prev, city: preferredCity }));

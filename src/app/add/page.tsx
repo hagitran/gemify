@@ -9,7 +9,6 @@ import Image from "next/image";
 import { useCityRoot } from "../CityRootContext";
 import { useRouter } from "next/navigation";
 import MultiSelectDropdown from "../components/MultiSelectDropdown";
-import { generateRubyPrompt } from "../../lib/ruby/addPlace";
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -112,8 +111,11 @@ export default function AddPlacePage() {
     const [inputFocused, setInputFocused] = useState(false);
     const [ambianceDropdownOpen, setAmbianceDropdownOpen] = useState(false);
     const ambianceDropdownRef = useRef<HTMLDivElement>(null);
-    const [rubyPrompt, setRubyPrompt] = useState<string>("what do you think about the place?");
-    const [rubyLoading, setRubyLoading] = useState<boolean>(false);
+    const lastClassifiedTextRef = useRef<string>("");
+    const [classifyLoading, setClassifyLoading] = useState(false);
+    const [classifyScore, setClassifyScore] = useState<number | null>(null);
+    const [classifyError, setClassifyError] = useState<string | null>(null);
+
 
     // Add to recent queries
     const addRecentQuery = useCallback((query: string) => {
@@ -136,20 +138,72 @@ export default function AddPlacePage() {
         setPlaceData(prev => ({ ...prev, city: preferredCity }));
     }, [preferredCity]);
 
-    // Generate ruby prompt on blur of notes field
-    const handleNotesBlur = async () => {
-        setRubyLoading(true);
+    const handleClassifyNotes = useCallback(async (text: string) => {
+        if (!text.trim() || placeData.type === "experience") return;
+
+        setClassifyLoading(true);
+        setClassifyError(null);
+        setClassifyScore(null);
+
         try {
-            const prompt = await generateRubyPrompt(placeData);
-            setRubyPrompt(prompt);
+            const response = await fetch("/api/classify", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ text }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data?.error || "Failed to classify notes");
+            }
+
+            if (typeof data?.score !== "number") {
+                throw new Error("No score returned from classify");
+            }
+
+            setClassifyScore(data.score);
         } catch (error) {
-            console.log("Failed to generate ruby prompt:", error);
-            // Fallback to a simple prompt
-            setRubyPrompt("anything else that would help someone new here?");
+            const message =
+                error instanceof Error ? error.message : "Failed to classify notes";
+            setClassifyError(message);
         } finally {
-            setRubyLoading(false);
+            setClassifyLoading(false);
         }
-    };
+    }, [placeData.type]);
+
+    useEffect(() => {
+        if (placeData.type === "experience") {
+            setClassifyScore(null);
+            setClassifyError(null);
+            lastClassifiedTextRef.current = "";
+            return;
+        }
+
+        const trimmedNotes = placeData.notes.trim();
+        if (!trimmedNotes) {
+            setClassifyScore(null);
+            setClassifyError(null);
+            lastClassifiedTextRef.current = "";
+            return;
+        }
+
+        if (classifyLoading || trimmedNotes === lastClassifiedTextRef.current) return;
+
+        const timeout = setTimeout(() => {
+            lastClassifiedTextRef.current = trimmedNotes;
+            handleClassifyNotes(trimmedNotes);
+        }, 500);
+
+        return () => clearTimeout(timeout);
+    }, [
+        placeData.notes,
+        placeData.type,
+        classifyLoading,
+        handleClassifyNotes,
+    ]);
 
     async function handleAdd(e: React.FormEvent) {
         e.preventDefault();
@@ -441,24 +495,43 @@ export default function AddPlacePage() {
                             Conversational <span className="ml-2 text-xs text-zinc-400">(Coming soon)</span>
                         </button>
                     </div>
-                    <div className="flex flex-row items-center justify-between">
+                    <div className="flex flex-row items-center justify-between gap-6">
                         <h1 className="flex text-2xl font-medium py-6">Share a gem</h1>
-                        <div className="flex flex-col min-h-0">
-                            {/* <span className="text-md font-medium text-zinc-700">Where abouts?</span> */}
-                            <select
-                                className="rounded-md bg-white focus:border-emerald-500 py-2 focus:outline-none text-zinc-700 text-sm"
-                                value={preferredCity}
-                                onChange={(e) => {
-                                    setPreferredCity(e.target.value);
-                                    setPlaceData(prev => ({ ...prev, city: e.target.value }));
-                                }}
-                            >
-                                <option value="sf">San Francisco</option>
-                                {/* <option value="la">Los Angeles</option> */}
-                                {/* <option value="tp">Taipei</option> */}
-                                <option value="hcmc">Ho Chi Minh City</option>
-                            </select>
-                        </div>                    </div>
+                        <div className="flex items-center gap-6 py-4">
+                            <div className="flex flex-col">
+                                {/* <span className="text-xs font-medium text-zinc-500 mb-1">Price</span> */}
+                                <div className="flex items-center gap-2">
+                                    {[1, 2, 3].map((dollar) => (
+                                        <button
+                                            type="button"
+                                            key={dollar}
+                                            onClick={() => handlePriceSelect(dollar)}
+                                            className={`text-2xl transition-colors ${placeData.price >= dollar ? 'text-emerald-500' : 'text-zinc-300'}`}
+                                            aria-label={`Set price to ${dollar}`}
+                                        >
+                                            $
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="flex flex-col min-h-0">
+                                {/* <span className="text-md font-medium text-zinc-700">Where abouts?</span> */}
+                                <select
+                                    className="rounded-md bg-white focus:border-emerald-500 py-2 focus:outline-none text-zinc-700 text-sm"
+                                    value={preferredCity}
+                                    onChange={(e) => {
+                                        setPreferredCity(e.target.value);
+                                        setPlaceData(prev => ({ ...prev, city: e.target.value }));
+                                    }}
+                                >
+                                    <option value="sf">San Francisco</option>
+                                    {/* <option value="la">Los Angeles</option> */}
+                                    {/* <option value="tp">Taipei</option> */}
+                                    <option value="hcmc">Ho Chi Minh City</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                     <form onSubmit={handleAdd} className="flex flex-col gap-6 w-full">
                         {/* Geocode search */}
                         <div className="flex flex-col w-full relative">
@@ -551,23 +624,6 @@ export default function AddPlacePage() {
                                         disabled={imageUploading}
                                     />
                                 </label>
-                                <div className="flex flex-col flex-1 py-4 gap-4">
-                                    {/* {(rubyPrompt || rubyLoading) && ( */}
-                                    <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-4 max-w-md text-sm text-zinc-700">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <span className="text-emerald-600 font-medium">ruby is here to help :)</span>
-                                        </div>
-                                        <span className="block mt-1">
-                                            {rubyLoading ? (
-                                                <span className="italic text-zinc-500">thinking...</span>
-                                            ) : (
-                                                rubyPrompt
-                                            )}
-                                        </span>
-                                    </div>
-                                    {/* )} */}
-                                </div>
-
                             </div>
 
                             <div className="flex flex-col gap-4 w-full">
@@ -622,43 +678,48 @@ export default function AddPlacePage() {
                                         required
                                     />
                                 </div>
-                                <div className="flex flex-row gap-8">
-                                    {/* Price input as 3 clickable dollar signs */}
-                                    <div className="flex flex-col">
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
-                                        <div className="flex items-center gap-2">
-                                            {[1, 2, 3].map((dollar) => (
-                                                <button
-                                                    type="button"
-                                                    key={dollar}
-                                                    onClick={() => handlePriceSelect(dollar)}
-                                                    className={`text-2xl transition-colors ${placeData.price >= dollar ? 'text-emerald-500' : 'text-zinc-300'}`}
-                                                    aria-label={`Set price to ${dollar}`}
+                                <div className="flex flex-col w-full">
+                                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                                        <label htmlFor="place-notes" className="block text-sm font-medium text-zinc-700">
+                                            {(placeData.type == 'experience') ? "What would you do here?" : "What's your go to here?"}
+                                        </label>
+                                        {placeData.type !== "experience" && (
+                                            <ul className="flex flex-wrap gap-2 ml-auto">
+                                                <li
+                                                    className={`px-2 py-0.5 text-xs border border-zinc-200 ${classifyScore !== null && classifyScore >= 70
+                                                        ? "line-through text-zinc-500 decoration-green-600 decoration-2"
+                                                        : "text-zinc-700"
+                                                        }`}
                                                 >
-                                                    $
-                                                </button>
-                                            ))}
+                                                    specific dish mentioned
+                                                </li>
+                                            </ul>
+                                        )}
+                                    </div>
+                                    <textarea
+                                        id="place-notes"
+                                        placeholder={`The iced chocolate here rocks...`}
+                                        value={placeData.notes}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            setPlaceData(prev => ({ ...prev, notes: value }));
+                                            setClassifyScore(null);
+                                            setClassifyError(null);
+                                        }}
+                                        rows={1}
+                                        className="w-full px-4 py-3 border border-zinc-200 rounded-lg focus:ring-0 resize-none text-zinc-900 placeholder:text-zinc-400 bg-white"
+                                        required
+                                    />
+                                    {classifyError && !classifyLoading && (
+                                        <div className="mt-6 p-4 rounded-lg border bg-red-50 border-red-200">
+                                            <div className="text-red-700 text-sm">{classifyError}</div>
                                         </div>
-                                    </div>
-
-                                    <div className="flex flex-col w-full">
-                                        <label htmlFor="place-notes" className="block text-sm font-medium text-gray-700 mb-1">{(placeData.type == 'experience') ? "What would you do here?" : "What's your go to here?"}</label>
-                                        <textarea
-                                            id="place-notes"
-                                            placeholder={`The iced chocolate here rocks...`}
-                                            value={placeData.notes}
-                                            onChange={(e) => setPlaceData(prev => ({ ...prev, notes: e.target.value }))}
-                                            onBlur={handleNotesBlur}
-                                            rows={2}
-                                            className="p-2 border border-zinc-300 w-full rounded-lg focus:outline-none focus:ring-2 text-md resize-none"
-                                            required
-                                        />
-                                    </div>
+                                    )}
                                 </div>
 
                             </div>
                         </div>
-                        <button type="submit" className="bg-emerald-600 cursor-pointer text-white px-4 py-2 rounded hover:bg-emerald-700 transition-colors font-medium mt-4" disabled={loading || imageUploading}>
+                        <button type="submit" className="bg-emerald-600 w-max cursor-pointer text-white ml-auto px-12 py-2 rounded hover:bg-emerald-700 transition-colors font-medium mt-2" disabled={loading || imageUploading}>
                             {loading ? "Adding..." : imageUploading ? "Uploading image..." : "Add Place"}
                         </button>
                         {error && (
